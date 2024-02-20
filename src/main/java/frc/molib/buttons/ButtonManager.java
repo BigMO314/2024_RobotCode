@@ -2,14 +2,27 @@ package frc.molib.buttons;
 
 import java.util.Vector;
 
+import frc.molib.utilities.Console;
+
 /**
  * Utility class for managing instances of {@link frc.molib.buttons.Button}. 
  * <p>Update frequently to maintain the most updated values.</p>
  */
 public final class ButtonManager {
 	private static Vector<Button> mButtonList = new Vector<Button>();
+	private static Thread mUpdateThread = new Thread() {
+		//TODO: Determine if ButtonManager should run in it's own thread
+		@Override public void run() {
+			Console.logMsg("Button Manager: Started");
+			while(true) ButtonManager.updateValues();
+		}
+	};
 
 	private ButtonManager() { throw new AssertionError("Utility Class"); }
+
+	public static void start() {
+		if(!mUpdateThread.isAlive()) mUpdateThread.start();
+	}
 
 	/**
 	 * Adds a new button to the manager
@@ -36,6 +49,10 @@ public final class ButtonManager {
 			btnTemp.updateValues();
 	}
 
+	/**
+	 * Clears getPressed() and getReleased() flags from each existing {@link Button}.
+	 * <p><i>Useful to run at the start of each game period to avoid flags raised while disabled.</i></p>
+	 */
 	public static void clearFlags() {
 		for(Button btnTemp : mButtonList){
 			btnTemp.getPressed();

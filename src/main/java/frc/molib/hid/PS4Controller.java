@@ -12,7 +12,17 @@ public class PS4Controller extends edu.wpi.first.wpilibj.PS4Controller {
 	 */
 	public PS4Controller(int port) { super(port); }
 	
-	public void configDeadzoneThreshold(double value) { mDeadzoneThreshold = value; }
+	/**
+	 * Configure how much of the Stick range should be ignored to avoid accidental small inputs.
+	 * <p><i>Values are then scaled to include full useable range of -1.0 to 1.0</i><p>
+	 * @param value	Stick axis range to be ignored [Absolute Value]
+	 */
+	public void configDeadzoneThreshold(double value) { mDeadzoneThreshold = Math.abs(value); }
+
+	/**
+	 * Configure whether the Y-Axis value should be inverted.
+	 * @param isInverted A value of false means up is a negative value
+	 */
 	public void configYAxisInverted(boolean isInverted) { mIsYAxisInverted = isInverted; }
 
 	/**

@@ -11,7 +11,12 @@ public class GenericHID extends edu.wpi.first.wpilibj.GenericHID {
 	 */
 	public GenericHID(int port) { super(port); }
 	
-	public void configDeadzoneThreshold(double value) { mDeadzoneThreshold = value; }
+	/**
+	 * Configure how much of the Stick range should be ignored to avoid accidental small inputs.
+	 * <p><i>Values are then scaled to include full useable range of -1.0 to 1.0</i><p>
+	 * @param value	Stick axis range to be ignored [Absolute Value]
+	 */
+	public void configDeadzoneThreshold(double value) { mDeadzoneThreshold = Math.abs(value); }
 
 	/**
 	 * Enable the rumble function of the controller.

@@ -7,13 +7,14 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 
 /**
  * <p>Creates an option chooser in dashboard</p>
- * <b>Still a work in progress!</b>
+ * <i>Need to implement {@link SendableRegistry#update}</i>
  * 
  * @param <OptionType> Enumeration tied to the list of options.
  * 
- * @see edu.wpi.first.wpilibj.smartdashboard.SendableChooser
+ * @deprecated As of 2023 Season; currently does not update in dashboard, fix in progress. 
+ * <p>Please use {@link edu.wpi.first.wpilibj.smartdashboard.SendableChooser}</p>
  */
-public class Option<OptionType extends Enum<OptionType>> {
+public class Chooser<OptionType extends Enum<OptionType>> {
 	private final NetworkTable mParentTable;
 	private final String mKey;
 
@@ -25,13 +26,15 @@ public class Option<OptionType extends Enum<OptionType>> {
 	 * @param key			Identifier key
 	 * @param defaultOption	Default selected option
 	 */
-	public Option(NetworkTable parentTable, String key, OptionType defaultOption) {
+	public Chooser(NetworkTable parentTable, String key, OptionType defaultOption) {
 		mParentTable = parentTable;
 		mKey = key;
 
 		for(OptionType enumValue : defaultOption.getDeclaringClass().getEnumConstants())
 			chsSendable.addOption(enumValue.toString(), enumValue);
 		chsSendable.setDefaultOption(defaultOption.toString(), defaultOption);
+
+		ChooserManager.addChooser(this);
 	}
 
 	/**
@@ -51,4 +54,8 @@ public class Option<OptionType extends Enum<OptionType>> {
 	 * @return Selected object. If one is not selected, returns the default option
 	 */
 	public OptionType get() { return chsSendable.getSelected(); }
+
+	public void update() {
+		SendableRegistry.update(chsSendable);
+	}
 }

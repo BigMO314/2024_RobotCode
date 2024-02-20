@@ -75,7 +75,7 @@ public class PIDController extends edu.wpi.first.math.controller.PIDController {
 	@Override
 	public boolean atSetpoint() {
 		if(!super.atSetpoint()) tmrAtSetpoint.reset();
-		return super.atSetpoint() && (tmrAtSetpoint.get() > mAtSetpointTime);
+		return super.atSetpoint() && (tmrAtSetpoint.get() >= mAtSetpointTime);
 	}
 
 	@Override 

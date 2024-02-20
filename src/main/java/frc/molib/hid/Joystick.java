@@ -18,7 +18,11 @@ public class Joystick extends GenericHID {
 	 */
 	public Joystick(int port) { super(port); }
 
-    public void configYAxisInverted(boolean isInverted) { mIsYAxisInverted = isInverted; }
+    /**
+	 * Configure whether the Y-Axis value should be inverted.
+	 * @param isInverted A value of false means up is a negative value
+	 */
+	public void configYAxisInverted(boolean isInverted) { mIsYAxisInverted = isInverted; }
 
 	/**
 	 * Read the value of the axis with the deadzone applied.

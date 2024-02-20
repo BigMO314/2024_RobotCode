@@ -14,7 +14,7 @@ public class Console {
 	 * to be appended to messages logged in the console.
 	 * @return Formatted timestamp
 	 */
-	private static String getTimeStamp() { return new SimpleDateFormat("HH.mm.ss").format(new Date()); }
+	private static String getTimeStamp() { return new SimpleDateFormat("HH:mm:ss.SSS").format(new Date()); }
 
 	/**
 	 * Prints a formatted message to the Console.

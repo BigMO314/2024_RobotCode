@@ -18,15 +18,32 @@ public class XboxController extends edu.wpi.first.wpilibj.XboxController {
 	 */
 	public XboxController(int port) { super(port); }
 	
-	public void configDeadzoneThreshold(double value) { mDeadzoneThreshold = value; }
-	public void configTriggerThreshold(double value) { mTriggerThreshold = value; }
+	/**
+	 * Configure how much of the Stick range should be ignored to avoid accidental small inputs.
+	 * <p><i>Values are then scaled to include full useable range of -1.0 to 1.0</i><p>
+	 * @param value	Stick axis range to be ignored [Absolute Value]
+	 */
+	public void configDeadzoneThreshold(double value) { mDeadzoneThreshold = Math.abs(value); }
+
+	/**
+	 * Configure how far the trigger has to be pulled to count as pressed.
+	 * @param value Trigger axis range before reading as pressed
+	 */
+	public void configTriggerThreshold(double value) { mTriggerThreshold = Math.abs(value); }
+
+	/**
+	 * Configure whether the Y-Axis value should be inverted.
+	 * @param isInverted A value of false means up is a negative value
+	 */
 	public void configYAxisInverted(boolean isInverted) { mIsYAxisInverted = isInverted; }
 
 	/**
 	 * Enable the rumble function of the controller.
 	 * @param value Power of the vibration
 	 */
-	public void setRumble(double value) { setRumble(value, value); }
+	public void setRumble(double value) { 
+		super.setRumble(RumbleType.kBothRumble, value); 
+	}
 	
 	/**
 	 * Enable the rumble function to each side of the controller.

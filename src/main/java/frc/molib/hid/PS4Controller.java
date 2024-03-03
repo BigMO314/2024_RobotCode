@@ -64,13 +64,13 @@ public class PS4Controller extends edu.wpi.first.wpilibj.PS4Controller {
 
 	@Override
 	public double getLeftY() {
-		if(mIsYAxisInverted) return super.getLeftY();
-		else return -super.getLeftY();
+		if(mIsYAxisInverted) return -super.getLeftY();
+		else return super.getLeftY();
 	}
 
 	@Override
 	public double getRightY() {
-		if(mIsYAxisInverted) return super.getRightY();
-		else return -super.getRightY();
+		if(mIsYAxisInverted) return -super.getRightY();
+		else return super.getRightY();
 	}
 }

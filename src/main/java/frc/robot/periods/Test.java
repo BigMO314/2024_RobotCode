@@ -7,7 +7,6 @@ import frc.molib.dashboard.Entry;
 import frc.molib.hid.XboxController;
 import frc.robot.Robot;
 import frc.robot.subsystem.Chassis;
-import frc.robot.subsystem.Hanger;
 import frc.robot.subsystem.Runway;
 
 /**
@@ -21,7 +20,7 @@ public class Test {
     private static Entry<Double> entBottomReelPower = new Entry<Double>(tblTest, "Bottom Reel Power");
     private static Entry<Double> entDirectorPower = new Entry<Double>(tblTest, "Director Power");
 
-    private static XboxController ctlTest = new XboxController(2);
+    private static XboxController ctlTest = new XboxController(1);
 
     private static Button btnResetDistance = new Button(){
         @Override public boolean get(){ return ctlTest.getStartButton(); }
@@ -66,6 +65,14 @@ public class Test {
     private static Button btnEnableLights = new Button(){
         @Override public boolean get(){return ctlTest.getBButton();}
     };
+
+    private static Button btnIntake = new Button() {
+        @Override public boolean get() { return ctlTest.getLeftTrigger(); }
+    };
+
+    private static Button btnFullSpeedShot = new Button(){
+        @Override public boolean get(){return ctlTest.getLeftBumper();}
+    };
     /**
      * Constructor
      */
@@ -78,6 +85,7 @@ public class Test {
         ButtonManager.clearFlags();
         
         Chassis.disablePIDs();
+        Robot.disableSubsystems();
     }
 
     /**
@@ -93,18 +101,20 @@ public class Test {
      *Updates motors pulls inputs from drivers statoin
      */
     public static void periodic() {
-        Chassis.disable();
 
         if(btnReels.get()){
             Runway.setReelPower(entTopReelPower.get(), entBottomReelPower.get());
+            if(btnEnableDirector.get()) Runway.enableDirector();
+            else Runway.disableDirector();
+        }else if( btnIntake.get()){
+            Runway.reverseReels();
+            Runway.reverseDirector();
+        }else if(btnFullSpeedShot.get()){
+            Runway.setReelPower(1.0, 1.0);
+            if(btnEnableDirector.get()) Runway.enableDirector();
+            else Runway.disableDirector();
         }else{
-            Runway.disableReels();
-        }
-
-        if(btnEnableDirector.get()) {
-            Runway.setDirectorPower(entDirectorPower.get());;
-        } else {
-            Runway.disableDirector();
+            Runway.disable();
         }
 /*
         if(btnEnableLights.get()){
@@ -114,29 +124,29 @@ public class Test {
         }
 */
 
-      /*  if(btnResetDistance.get()){
+        if(btnResetDistance.get()){
             Chassis.resetDistance();
             Chassis.resetAngle();
         }
 
         if(btnDriveOneFeet.getPressed()){
             Chassis.resetDistance();
-            Chassis.goToDistance(12.00);
+            Chassis.goToDistance(-12.00);
         }
 
         if(btnDriveTwoFeet.getPressed()){
             Chassis.resetDistance();
-            Chassis.goToDistance(24.00);
+            Chassis.goToDistance(-24.00);
         }
 
         if(btnDriveFourFeet.getPressed()){
             Chassis.resetDistance();
-            Chassis.goToDistance(48.00);
+            Chassis.goToDistance(-48.00);
         }
 
         if(btnDriveEightFeet.getPressed()){
             Chassis.resetDistance();
-            Chassis.goToDistance(96.00);
+            Chassis.goToDistance(-96.00);
         }
 
         if(btnDisablePIDs.get()){
@@ -147,7 +157,7 @@ public class Test {
             Chassis.resetAngle();
             Chassis.goToAngle(90.0);
         }
-        */
+        
 
        // Runway.setDirectorPower(ctlTest.getTriggerAxis());
 

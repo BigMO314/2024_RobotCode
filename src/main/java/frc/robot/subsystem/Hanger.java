@@ -2,15 +2,15 @@ package frc.robot.subsystem;
 
 import com.ctre.phoenix6.hardware.TalonFX;
 
+import edu.wpi.first.math.MathUtil;
+
 /**
  * Manages the Hanger
  */
 public class Hanger {
 
-    private static TalonFX hanger_L= new TalonFX(8);
-    private static TalonFX hanger_R = new TalonFX(9);
-    private static double mLeftHangerPower = 0.0;
-    private static double mRightHangerPower = 0.0;
+    private static TalonFX hanger= new TalonFX(8);
+    private static double mHangerPower = 0.0;
 
     /**
      * prevents other instances of the class being made
@@ -22,8 +22,7 @@ public class Hanger {
      * @param power
      */
     public static void setHangerPower(double power){
-        mLeftHangerPower = power;
-        mRightHangerPower = power;
+        mHangerPower = power;
     }    
 
     /**
@@ -51,7 +50,7 @@ public class Hanger {
      * configures motors
      */
     public static void init(){
-        hanger_L.setInverted(true);
+        hanger.setInverted(true);
     }
 
     /**
@@ -63,7 +62,10 @@ public class Hanger {
      * loops and updates motor powers
      */
     public static void periodic(){
-        hanger_L.set(mLeftHangerPower);
-        hanger_R.set(mRightHangerPower);
+        hanger.set(mHangerPower);
+      
+        if(hanger.getPosition().getValue() <= 0.0){
+            mHangerPower = MathUtil.clamp(mHangerPower, 0.0, 1.0);
+        }
     }
 }

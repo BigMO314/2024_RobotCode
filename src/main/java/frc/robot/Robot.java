@@ -11,6 +11,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.TimedRobot;
 import frc.molib.buttons.ButtonManager;
 import frc.robot.periods.Autonomous;
+import frc.robot.periods.Disabled;
 import frc.robot.periods.Teleoperated;
 import frc.robot.periods.Test;
 import frc.robot.subsystem.Chassis;
@@ -50,6 +51,7 @@ public class Robot extends TimedRobot {
             camMain = CameraServer.startAutomaticCapture("Main Camera", 0);
             camMain.setFPS(15);
             camMain.setResolution(128, 80);
+            camMain.setBrightness(50);
         } finally {
             //Just ignore camera if it fails
         }
@@ -73,6 +75,7 @@ public class Robot extends TimedRobot {
     public void robotPeriodic() {
         ButtonManager.updateValues();
 
+        Chassis.updateDashboard();
         Runway.updateDashboard();
     }
 
@@ -97,10 +100,14 @@ public class Robot extends TimedRobot {
     }
 
     @Override
-    public void disabledInit() {}
+    public void disabledInit() {
+        Disabled.init();
+    }
 
     @Override
-    public void disabledPeriodic() {}
+    public void disabledPeriodic() {
+        Disabled.periodic();
+    }
 
     @Override
     public void testInit() {

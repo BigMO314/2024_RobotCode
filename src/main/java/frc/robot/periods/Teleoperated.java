@@ -1,16 +1,18 @@
 package frc.robot.periods;
 
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.molib.buttons.Button;
 import frc.molib.buttons.ButtonManager;
-import frc.molib.hid.Joystick;
 import frc.molib.hid.XboxController;
 import frc.robot.subsystem.Chassis;
 import frc.robot.subsystem.Hanger;
 import frc.robot.subsystem.Runway;
 
-/**
+/** 
  * Runs during the Teleoperated Period
  */
 @SuppressWarnings("unused")
@@ -20,24 +22,31 @@ public class Teleoperated {
      * Options for robot speed during teleoperated
      */
     public static enum SpeedPercentage{
-        TORTOISE("Tortoise", .05),
-        SLOW("Slow", .40),
-        NORMAL("Normal", .70),
-        FAST("Fast", .95);
+        TORTOISE("Tortoise - 10%", 0.05, 0.10, 0.20),
+        SLOW("Slow - 40%", 0.15, 0.40, 0.60),
+        NORMAL("Normal - 75%", 0.15, 0.75, 0.90),
+        FAST("Fast - 85%", 0.15, 0.85, 1.00);
 
         public final String label;
-        public final double percentage;
+        public final double slow;    
+        public final double standard;
+        public final double boost;
 
-        private SpeedPercentage(String label, double percentage){
+        private SpeedPercentage(String label, double slow, double standard, double boost){
             this.label = label;
-            this.percentage = percentage;
+            this.slow = slow;
+            this.standard = standard;
+            this.boost = boost;
         }
     }
    
+    /*
+     * Options for drive style during teleoperated
+     */
     public static enum DriveType{
         TANK("Tank"),
-        CHEESY("Cheesy"),
-        ARCADE("Arcade");
+        CHEDDER("Chedder"),
+        ARKADE("Arkade");
 
         public final String label;
         private DriveType(String label){
@@ -47,51 +56,101 @@ public class Teleoperated {
             return label;
         }
     }
-   private static SendableChooser<SpeedPercentage> chsSpeedPercentage = new SendableChooser<SpeedPercentage>();
-   private static SpeedPercentage mSelectedSpeedPercentage;
-   private static SendableChooser<DriveType> chsDriveType = new SendableChooser<DriveType>();
-   private static DriveType mSelectedDriveType;
-   private static XboxController ctlDrive = new XboxController(0);
+
+    //OBJECTS//
+
+    //Sendable choosers
+    private static SendableChooser<SpeedPercentage> chsSpeedPercentage = new SendableChooser<SpeedPercentage>();
+    private static SendableChooser<DriveType> chsDriveType = new SendableChooser<DriveType>();
+
+    //Buffer variables 
+    private static SpeedPercentage mSelectedSpeedPercentage;
+    private static DriveType mSelectedDriveType;
+
+    //Make controllers
+    private static XboxController ctlDrive = new XboxController(0);
     private static XboxController ctlOperator = new XboxController(1);
-    //Make buttons here
-    private static final Button btnEnableReel = new Button(){
+
+    //Make timer
+    private static Timer tmrSpinUp = new Timer();
+
+
+    //BUTTONS//
+
+    //Shots
+    private static final Button btnSpeakerShot = new Button(){
         @Override public boolean get() { return ctlOperator.getRightTrigger(); }
     };
 
-    private static final Button btnReveseReel = new Button(){
+    private static final Button btnAmpShot = new Button(){
+        @Override public boolean get() {return ctlOperator.getRightBumper(); }
+    };
+    
+    //Speed variability
+    private static final Button btnBoost = new Button(){
+        @Override public boolean get() {return ctlDrive.getRightTrigger() || ctlDrive.getLeftTrigger();}
+    };
+
+    private static final Button btnSlow = new Button(){
+        @Override public boolean get() {return ctlDrive.getRightBumper();}
+    };
+
+    //Brake
+    private static final Button btnBrake = new Button(){
+        @Override public boolean get() {return ctlDrive.getLeftBumper();}
+    };
+
+    //Intake
+    private static final Button btnIntake = new Button(){
         @Override public boolean get() { return ctlOperator.getLeftTrigger(); }
     };
 
-    private static final Button btnEnableDirector = new Button(){
-        @Override public boolean get() { return ctlDrive.getRightTrigger(); }
-    };
-    private static final Button btnAmpShot = new Button(){
-        @Override public boolean get() {return ctlOperator.getRightBumper();}
+    //Floor-intake specific
+    private static final Button btnReverseFloorIntake = new Button(){
+        @Override public boolean get() { return ctlOperator.getXButton(); }
     };
 
+    private static final Button btnRaiseFloorIntake = new Button(){
+        @Override public boolean get() { return ctlOperator.getYButton(); }
+    };
+    
+    private static final Button btnLowerFloorIntake = new Button(){
+        @Override public boolean get() { return ctlOperator.getAButton(); }
+    };    
+
+    //Hanger
     private static final Button btnRaiseHanger = new Button(){
-        @Override public boolean get() { return ctlDrive.getAButton(); }
+        @Override public boolean get() { return ctlOperator.getPOV() == 0; }
     };
 
     private static final Button btnLowerHanger = new Button(){
-        @Override public boolean get() { return ctlDrive.getBButton(); }
+        @Override public boolean get() { return ctlOperator.getPOV() == 180; }
     };
 
- 
 
     /**
-     * prevents other instances of the Teleoperated class being made
+     * Prevents other instances of the Teleoperated class being made
      */
     private Teleoperated(){}
+
 
     /**
      * Runs once at the beginning of Tele-Op and configures motors
      */
     public static void init(){
-        ctlDrive.configYAxisInverted(true);
-        mSelectedSpeedPercentage  = chsSpeedPercentage.getSelected();
+
         ButtonManager.clearFlags();
+
+        ctlDrive.configYAxisInverted(true);
+        ctlDrive.setRumble(0.0);
+
+        //Get selected enumerations
+        mSelectedSpeedPercentage  = chsSpeedPercentage.getSelected();
         mSelectedDriveType = chsDriveType.getSelected();
+
+        //Timer
+        tmrSpinUp.start();
+        tmrSpinUp.reset();
     }
 
 
@@ -106,16 +165,18 @@ public class Teleoperated {
 
         chsSpeedPercentage.setDefaultOption(SpeedPercentage.NORMAL.label, SpeedPercentage.NORMAL);
 
-        SmartDashboard.putData("Zoomy Percentage", chsSpeedPercentage);
+        SmartDashboard.putData("Speed Percentage", chsSpeedPercentage);
 
         chsDriveType.addOption(DriveType.TANK.label, DriveType.TANK);
-        chsDriveType.addOption(DriveType.ARCADE.label, DriveType.ARCADE);
-        chsDriveType.addOption(DriveType.CHEESY.label, DriveType.CHEESY);
+        chsDriveType.addOption(DriveType.ARKADE.label, DriveType.ARKADE);
+        chsDriveType.addOption(DriveType.CHEDDER.label, DriveType.CHEDDER);
 
         chsDriveType.setDefaultOption(DriveType.TANK.label, DriveType.TANK);
 
         SmartDashboard.putData("Drive Type", chsDriveType);
     }
+
+    //MATH//
     /**
      *math for tank drive
      * 
@@ -132,47 +193,73 @@ public class Teleoperated {
      * @param steering [-1.0 to 1.0] left right
      */
     private static void setArcadeDrive(double throttle, double steering){
+        if(Math.abs(throttle) > Math.abs(steering) && !btnSlow.get()){
+            steering = MathUtil.clamp(( steering / (Math.abs(throttle) * 3.00 )), -1.0, 1.0);
+        }
         setTankDrive(throttle + steering, throttle - steering);
     }
+
 
     /**
      *loops and updates values      
      */
     public static void periodic(){
 
+        if(DriverStation.getMatchTime() > 15.0 && DriverStation.getMatchTime() < 20.0) ctlDrive.setRumble(1.0);
+
+        //Create speedPercentage
+        double speedPercentage;
+
+        //Set speedPercentage based on selected option
+        if(btnSlow.get()){
+            speedPercentage = mSelectedSpeedPercentage.slow;
+        }else if(btnBoost.get()){
+            speedPercentage = mSelectedSpeedPercentage.boost;
+        }else{
+            speedPercentage = mSelectedSpeedPercentage.standard;
+        }
         
-        double speedPercentage = mSelectedSpeedPercentage.percentage;
-        if(mSelectedDriveType == DriveType.ARCADE){
-            setArcadeDrive(Math.signum(ctlDrive.getLeftY())*(ctlDrive.getLeftY()*ctlDrive.getLeftY()*speedPercentage), (Math.signum(ctlDrive.getLeftX()))*(ctlDrive.getLeftX()*ctlDrive.getLeftX())*speedPercentage);
-        }else if(mSelectedDriveType == DriveType.CHEESY){
-            setArcadeDrive(Math.signum(ctlDrive.getLeftY())*(ctlDrive.getLeftY()*ctlDrive.getLeftY()*speedPercentage), (Math.signum(ctlDrive.getRightX()))*(ctlDrive.getRightX()*ctlDrive.getRightX())*speedPercentage);
+        //Math of inputs for selected drive styles
+        if(mSelectedDriveType == DriveType.ARKADE){
+            setArcadeDrive(Math.signum(ctlDrive.getLeftY())*(ctlDrive.getLeftY()*ctlDrive.getLeftY()) * speedPercentage, (Math.signum(ctlDrive.getLeftX()))*(ctlDrive.getLeftX()*ctlDrive.getLeftX()) * speedPercentage);
+        }else if(mSelectedDriveType == DriveType.CHEDDER){
+            setArcadeDrive(Math.signum(ctlDrive.getLeftY())*(ctlDrive.getLeftY()*ctlDrive.getLeftY()) * speedPercentage, (Math.signum(ctlDrive.getRightX()))*(ctlDrive.getRightX()*ctlDrive.getRightX()) * speedPercentage);
         }else {
-            setTankDrive(Math.signum(ctlDrive.getLeftY())*(ctlDrive.getLeftY()*ctlDrive.getLeftY())*speedPercentage, (Math.signum(ctlDrive.getRightY()))*(ctlDrive.getRightY()*ctlDrive.getRightY())*speedPercentage);
+            setTankDrive(Math.signum(ctlDrive.getLeftY())*(ctlDrive.getLeftY()*ctlDrive.getLeftY()) * speedPercentage, (Math.signum(ctlDrive.getRightY()))*(ctlDrive.getRightY()*ctlDrive.getRightY()) * speedPercentage);
         }
 
-        if(btnEnableReel.get()){
-            Runway.enableReels();
-            Runway.enableLED();
-            if(btnEnableDirector.get()) {
+        //Brake button logic
+        if(btnBrake.getPressed()){
+            Chassis.enableBrake();
+        }else if(btnBrake.getReleased()){
+            Chassis.disableBrake();
+        }
+
+        //Runway logic
+        if(btnSpeakerShot.get()) {
+            Runway.speakerShot();
+            if(tmrSpinUp.get() > 0.25){
                 Runway.enableDirector();
             } else {
                 Runway.disableDirector();
             }
-        } else if(btnAmpShot.get()){
-            Runway.setReelPower(.15, .20);
-            if(btnEnableDirector.get()) {
+        } else if (btnAmpShot.get()) {
+            Runway.ampShot();
+            if(tmrSpinUp.get() > 0.25){
                 Runway.enableDirector();
             } else {
                 Runway.disableDirector();
             }
-        }else if(btnReveseReel.get()){
+        } else if (btnIntake.get()) {
             Runway.reverseReels();
             Runway.reverseDirector();
             Runway.enableLED();
-        }else{
+        } else {
             Runway.disable();
+            tmrSpinUp.reset();
         }
 
+        //Hanger function
         if(btnLowerHanger.get()){
             Hanger.lowerHanger();
         }else if(btnRaiseHanger.get()){
@@ -180,7 +267,6 @@ public class Teleoperated {
         }else{
             Hanger.disable();
         }
-
 
         //Update Subsystems
         Chassis.periodic();

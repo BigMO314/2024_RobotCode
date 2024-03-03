@@ -78,14 +78,14 @@ public class XboxController extends edu.wpi.first.wpilibj.XboxController {
 
 	@Override
 	public double getLeftY() {
-		if(mIsYAxisInverted) return super.getLeftY();
-		else return -super.getLeftY();
+		if(mIsYAxisInverted) return -super.getLeftY();
+		else return super.getLeftY();
 	}
 
 	@Override
 	public double getRightY() {
-		if(mIsYAxisInverted) return super.getRightY();
-		else return -super.getRightY();
+		if(mIsYAxisInverted) return -super.getRightY();
+		else return super.getRightY();
 	}
 	
 	/**

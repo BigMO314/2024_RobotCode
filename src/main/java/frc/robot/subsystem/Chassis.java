@@ -2,6 +2,7 @@ package frc.robot.subsystem;
 
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
@@ -21,9 +22,9 @@ public class Chassis {//make the Chassis class
     private static Entry<Double> entDrive_Distance_R1 = new Entry<Double>(tblChassis, "Drive Distance - R1");
     private static Entry<Double> entDrive_Distance_R2 = new Entry<Double>(tblChassis, "Drive Distance - R2");
     private static Entry<Double> entDrive_Distance_Average = new Entry<Double>(tblChassis, "Drive Distance - Average");
-    private static Entry<Double> entDrive_Angle = new Entry<Double>(tblChassis, "Euro");
+    private static Entry<Double> entDrive_Angle = new Entry<Double>(tblChassis, "Gyro");
     private static Entry<Boolean> entDrive_AtDistance = new Entry<Boolean>(tblChassis, "Is At Distance");
-    private static Entry<Double> entPID_Angle = new Entry<Double>(tblChassis, "PID Euro");
+    private static Entry<Double> entPID_Angle = new Entry<Double>(tblChassis, "PID Gyro");
 
     private static TalonFX mtrDrive_L1 = new TalonFX(1);//make the motors
     private static TalonFX mtrDrive_L2 = new TalonFX(2);
@@ -59,8 +60,9 @@ public class Chassis {//make the Chassis class
         mtrDrive_L2.setInverted(true);
         mtrDrive_R1.setInverted(false);
         mtrDrive_R2.setInverted(false);
-        mtrDrive_L2.setControl(new Follower(mtrDrive_L1.getDeviceID(), false));//makes left 2 follow left 1
-        mtrDrive_R2.setControl(new Follower(mtrDrive_R1.getDeviceID(), false));//ditto but right
+        //mtrDrive_L2.setControl(new Follower(mtrDrive_L1.getDeviceID(), false));//makes left 2 follow left 1
+        //mtrDrive_R2.setControl(new Follower(mtrDrive_R1.getDeviceID(), false));//ditto but right
+
 
         gyrDrive_Angle.calibrate();
 
@@ -79,6 +81,18 @@ public class Chassis {//make the Chassis class
 
     }
 
+    /** TODO: Add comment */
+    public static void updateDashboard() {
+        entDrive_Distance_L1.set(mtrDrive_L1.getPosition().getValue() * mDriveGearRatio * (4.0 * Math.PI));
+        entDrive_Distance_L2.set(mtrDrive_L2.getPosition().getValue() * mDriveGearRatio * (4.0 * Math.PI));
+        entDrive_Distance_R1.set(mtrDrive_R1.getPosition().getValue() * mDriveGearRatio * (4.0 * Math.PI));
+        entDrive_Distance_R2.set(mtrDrive_R2.getPosition().getValue() * mDriveGearRatio * (4.0 * Math.PI));
+        entDrive_Distance_Average.set(getDriveDistance());
+        entDrive_AtDistance.set(pidDrive_Distance.atSetpoint());
+        entDrive_Angle.set(gyrDrive_Angle.getAngle());
+        entPID_Angle.set(pidDrive_Angle.calculate(getDriveAngle()));
+    }
+
     /**
      * sets motor speeds
      */
@@ -87,12 +101,25 @@ public class Chassis {//make the Chassis class
         mRightDrivePower= rightPower;
     }
 
+    public static void enableBrake(){
+        mtrDrive_L1.setNeutralMode(NeutralModeValue.Brake);
+        mtrDrive_L2.setNeutralMode(NeutralModeValue.Brake);
+        mtrDrive_R1.setNeutralMode(NeutralModeValue.Brake);
+        mtrDrive_R2.setNeutralMode(NeutralModeValue.Brake);
+    }
+
+    public static void disableBrake(){
+        mtrDrive_L1.setNeutralMode(NeutralModeValue.Coast);
+        mtrDrive_L2.setNeutralMode(NeutralModeValue.Coast);
+        mtrDrive_R1.setNeutralMode(NeutralModeValue.Coast);
+        mtrDrive_R2.setNeutralMode(NeutralModeValue.Coast);
+    }
     /**
      * returns how far a motor has driven in inches
      * @return
      */
     public static double getDriveDistance(){
-        return ((mtrDrive_L1.getPosition().getValue()+mtrDrive_L2.getPosition().getValue()+mtrDrive_R1.getPosition().getValue()+mtrDrive_R2.getPosition().getValue())/4.0)*(mDriveGearRatio)*(4.0*Math.PI);
+        return ((((mtrDrive_L1.getPosition().getValue()+mtrDrive_L2.getPosition().getValue()+mtrDrive_R1.getPosition().getValue()+mtrDrive_R2.getPosition().getValue())/4.0)*(mDriveGearRatio)*(4.0*Math.PI))/0.965);
     }
 
     /**
@@ -185,15 +212,23 @@ public class Chassis {//make the Chassis class
         } else if(pidDrive_Angle.isEnabled()){
             setDrivePower(pidDrive_Angle.calculate(getDriveAngle()), -pidDrive_Angle.calculate(getDriveAngle()));
         }
+    /*
         entDrive_Distance_L1.set(mtrDrive_L1.getPosition().getValue() * mDriveGearRatio * (4.0 * Math.PI));
         entDrive_Distance_L2.set(mtrDrive_L2.getPosition().getValue() * mDriveGearRatio * (4.0 * Math.PI));
         entDrive_Distance_R1.set(mtrDrive_R1.getPosition().getValue() * mDriveGearRatio * (4.0 * Math.PI));
         entDrive_Distance_R2.set(mtrDrive_R2.getPosition().getValue() * mDriveGearRatio * (4.0 * Math.PI));
+        
         entDrive_Distance_Average.set(getDriveDistance());
         entDrive_AtDistance.set(pidDrive_Distance.atSetpoint());
+
         entDrive_Angle.set(gyrDrive_Angle.getAngle());
         entPID_Angle.set(pidDrive_Angle.calculate(getDriveAngle()));
-        mtrDrive_L1.set(mLeftDrivePower);//actually sets the motor's power
+*/
+        mtrDrive_L1.set(mLeftDrivePower);
+        mtrDrive_L2.set(mLeftDrivePower);//actually sets the motor's power
         mtrDrive_R1.set(mRightDrivePower);
+        mtrDrive_R2.set(mRightDrivePower);
+
     }
 }
+ 

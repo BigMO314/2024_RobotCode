@@ -7,7 +7,10 @@ import frc.molib.dashboard.Entry;
 import frc.molib.hid.XboxController;
 import frc.robot.Robot;
 import frc.robot.subsystem.Chassis;
+import frc.robot.subsystem.Hanger;
 import frc.robot.subsystem.Runway;
+
+//TODO: Hanger reset options
 
 /**
  * Implement Test Code and make test adjustments without affecting the main code
@@ -20,59 +23,73 @@ public class Test {
     private static Entry<Double> entBottomReelPower = new Entry<Double>(tblTest, "Bottom Reel Power");
     private static Entry<Double> entDirectorPower = new Entry<Double>(tblTest, "Director Power");
 
-    private static XboxController ctlTest = new XboxController(1);
+    private static XboxController ctlDriver = new XboxController(0);
+    private static XboxController ctlOperator = new XboxController(1);
 
     private static Button btnResetDistance = new Button(){
-        @Override public boolean get(){ return ctlTest.getStartButton(); }
+        @Override public boolean get(){ return ctlOperator.getStartButton(); }
     };
 
     private static Button btnDriveEightFeet = new Button(){
-        @Override public boolean get(){return ctlTest.getAButton();}
+        @Override public boolean get(){return ctlOperator.getAButton();}
     };
 
     private static Button btnDriveFourFeet = new Button(){
-        @Override public boolean get(){return ctlTest.getXButton();}
+        @Override public boolean get(){return ctlOperator.getXButton();}
     };
 
     private static Button btnDriveTwoFeet = new Button(){
-        @Override public boolean get(){return ctlTest.getYButton();}
+        @Override public boolean get(){return ctlOperator.getYButton();}
     };
 
     private static Button btnDriveOneFeet = new Button(){
-        @Override public boolean get(){return ctlTest.getBButton();}
+        @Override public boolean get(){return ctlOperator.getBButton();}
     };
 
     private static Button btnTurn90 = new Button(){
-        @Override public boolean get(){return ctlTest.getRightBumper();}
+        @Override public boolean get(){return ctlOperator.getRightBumper();}
     };
 
     private static Button btnDisablePIDs = new Button(){
-        @Override public boolean get(){return ctlTest.getBackButton();}
+        @Override public boolean get(){return ctlOperator.getBackButton();}
     };
 
     private static Button btnReels = new Button(){
-        @Override public boolean get(){return ctlTest.getYButton();}
+        @Override public boolean get(){return ctlOperator.getYButton();}
     };
 
     private static Button btnBottomReel = new Button(){
-        @Override public boolean get(){return ctlTest.getAButton();        }
+        @Override public boolean get(){return ctlOperator.getAButton();        }
     };
 
     private static Button btnEnableDirector = new Button(){
-        @Override public boolean get(){return ctlTest.getRightTrigger();}
+        @Override public boolean get(){return ctlOperator.getRightTrigger();}
     };
 
     private static Button btnEnableLights = new Button(){
-        @Override public boolean get(){return ctlTest.getBButton();}
+        @Override public boolean get(){return ctlOperator.getBButton();}
     };
 
     private static Button btnIntake = new Button() {
-        @Override public boolean get() { return ctlTest.getLeftTrigger(); }
+        @Override public boolean get() { return ctlOperator.getLeftTrigger(); }
     };
 
     private static Button btnFullSpeedShot = new Button(){
-        @Override public boolean get(){return ctlTest.getLeftBumper();}
+        @Override public boolean get(){return ctlOperator.getLeftBumper();}
     };
+
+    private static Button btnHanger_Reset = new Button() {
+        @Override public boolean get() { return ctlDriver.getStartButton() && ctlDriver.getBackButton(); }
+    };
+
+    private static Button btnHanger_Extend = new Button() {
+        @Override public boolean get() { return ctlDriver.getPOV() == 0; }
+    };
+
+    private static Button btnHanger_Retract = new Button() {
+        @Override public boolean get() { return ctlDriver.getPOV() == 180; }
+    };
+
     /**
      * Constructor
      */
@@ -85,6 +102,7 @@ public class Test {
         ButtonManager.clearFlags();
         
         Chassis.disablePIDs();
+        Hanger.enableOverride();
         Robot.disableSubsystems();
     }
 
@@ -157,6 +175,16 @@ public class Test {
             Chassis.resetAngle();
             Chassis.goToAngle(90.0);
         }
+
+        if(btnHanger_Reset.getPressed())
+            Hanger.resetPosition();
+
+        if(btnHanger_Extend.get())
+            Hanger.setHangerPower(0.20);
+        else if(btnHanger_Retract.get())
+            Hanger.setHangerPower(-0.20);
+        else
+            Hanger.disable();
         
 
        // Runway.setDirectorPower(ctlTest.getTriggerAxis());
@@ -164,7 +192,7 @@ public class Test {
         //Update Subsystems
         Chassis.periodic();
         Runway.periodic();
-        //Hanger.periodic();
+        Hanger.periodic();
     }
     
 }

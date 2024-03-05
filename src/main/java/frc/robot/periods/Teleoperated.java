@@ -68,7 +68,7 @@ public class Teleoperated {
     private static DriveType mSelectedDriveType;
 
     //Make controllers
-    private static XboxController ctlDrive = new XboxController(0);
+    private static XboxController ctlDriver = new XboxController(0);
     private static XboxController ctlOperator = new XboxController(1);
 
     //Make timer
@@ -88,16 +88,16 @@ public class Teleoperated {
     
     //Speed variability
     private static final Button btnBoost = new Button(){
-        @Override public boolean get() {return ctlDrive.getRightTrigger() || ctlDrive.getLeftTrigger();}
+        @Override public boolean get() {return ctlDriver.getRightTrigger() || ctlDriver.getLeftTrigger();}
     };
 
     private static final Button btnSlow = new Button(){
-        @Override public boolean get() {return ctlDrive.getRightBumper();}
+        @Override public boolean get() {return ctlDriver.getRightBumper();}
     };
 
     //Brake
     private static final Button btnBrake = new Button(){
-        @Override public boolean get() {return ctlDrive.getLeftBumper();}
+        @Override public boolean get() {return ctlDriver.getLeftBumper();}
     };
 
     //Intake
@@ -119,12 +119,20 @@ public class Teleoperated {
     };    
 
     //Hanger
-    private static final Button btnRaiseHanger = new Button(){
-        @Override public boolean get() { return ctlOperator.getPOV() == 0; }
+    private static final Button btnHanger_Reset = new Button() {
+        @Override public boolean get() { return ctlDriver.getStartButton() && ctlDriver.getBackButton(); };
     };
 
-    private static final Button btnLowerHanger = new Button(){
-        @Override public boolean get() { return ctlOperator.getPOV() == 180; }
+    private static final Button btnHanger_Override = new Button() {
+        @Override public boolean get() { return ctlOperator.getStartButton(); }
+    };
+
+    private static final Button btnExtendHanger = new Button(){
+        @Override public boolean get() { return ctlDriver.getPOV() == 0; }
+    };
+
+    private static final Button btnRetractHanger = new Button(){
+        @Override public boolean get() { return ctlDriver.getPOV() == 180; }
     };
 
 
@@ -141,16 +149,15 @@ public class Teleoperated {
 
         ButtonManager.clearFlags();
 
-        ctlDrive.configYAxisInverted(true);
-        ctlDrive.setRumble(0.0);
+        ctlDriver.configYAxisInverted(true);
+        ctlDriver.setRumble(0.0);
 
         //Get selected enumerations
         mSelectedSpeedPercentage  = chsSpeedPercentage.getSelected();
         mSelectedDriveType = chsDriveType.getSelected();
 
         //Timer
-        tmrSpinUp.start();
-        tmrSpinUp.reset();
+        tmrSpinUp.restart();
     }
 
 
@@ -192,6 +199,7 @@ public class Teleoperated {
      * @param throttle [-1.0 to 1.0] forward backward
      * @param steering [-1.0 to 1.0] left right
      */
+    //TODO: check if button slow is necessary
     private static void setArcadeDrive(double throttle, double steering){
         if(Math.abs(throttle) > Math.abs(steering) && !btnSlow.get()){
             steering = MathUtil.clamp(( steering / (Math.abs(throttle) * 3.00 )), -1.0, 1.0);
@@ -205,7 +213,7 @@ public class Teleoperated {
      */
     public static void periodic(){
 
-        if(DriverStation.getMatchTime() > 15.0 && DriverStation.getMatchTime() < 20.0) ctlDrive.setRumble(1.0);
+        if(DriverStation.getMatchTime() > 15.0 && DriverStation.getMatchTime() < 20.0) ctlDriver.setRumble(1.0);
 
         //Create speedPercentage
         double speedPercentage;
@@ -221,11 +229,11 @@ public class Teleoperated {
         
         //Math of inputs for selected drive styles
         if(mSelectedDriveType == DriveType.ARKADE){
-            setArcadeDrive(Math.signum(ctlDrive.getLeftY())*(ctlDrive.getLeftY()*ctlDrive.getLeftY()) * speedPercentage, (Math.signum(ctlDrive.getLeftX()))*(ctlDrive.getLeftX()*ctlDrive.getLeftX()) * speedPercentage);
+            setArcadeDrive(Math.signum(ctlDriver.getLeftY())*(ctlDriver.getLeftY()*ctlDriver.getLeftY()) * speedPercentage, (Math.signum(ctlDriver.getLeftX()))*(ctlDriver.getLeftX()*ctlDriver.getLeftX()) * speedPercentage);
         }else if(mSelectedDriveType == DriveType.CHEDDER){
-            setArcadeDrive(Math.signum(ctlDrive.getLeftY())*(ctlDrive.getLeftY()*ctlDrive.getLeftY()) * speedPercentage, (Math.signum(ctlDrive.getRightX()))*(ctlDrive.getRightX()*ctlDrive.getRightX()) * speedPercentage);
+            setArcadeDrive(Math.signum(ctlDriver.getLeftY())*(ctlDriver.getLeftY()*ctlDriver.getLeftY()) * speedPercentage, (Math.signum(ctlDriver.getRightX()))*(ctlDriver.getRightX()*ctlDriver.getRightX()) * speedPercentage);
         }else {
-            setTankDrive(Math.signum(ctlDrive.getLeftY())*(ctlDrive.getLeftY()*ctlDrive.getLeftY()) * speedPercentage, (Math.signum(ctlDrive.getRightY()))*(ctlDrive.getRightY()*ctlDrive.getRightY()) * speedPercentage);
+            setTankDrive(Math.signum(ctlDriver.getLeftY())*(ctlDriver.getLeftY()*ctlDriver.getLeftY()) * speedPercentage, (Math.signum(ctlDriver.getRightY()))*(ctlDriver.getRightY()*ctlDriver.getRightY()) * speedPercentage);
         }
 
         //Brake button logic
@@ -260,10 +268,20 @@ public class Teleoperated {
         }
 
         //Hanger function
-        if(btnLowerHanger.get()){
-            Hanger.lowerHanger();
-        }else if(btnRaiseHanger.get()){
-            Hanger.raiseHanger();
+        if(btnHanger_Override.get()) {
+            Hanger.enableOverride();
+        } else {
+            Hanger.disableOverride();
+        }
+
+        if(btnHanger_Reset.getPressed()) {
+            Hanger.resetPosition();
+        }
+
+        if(btnRetractHanger.get()){
+            Hanger.retract();
+        }else if(btnExtendHanger.get()){
+            Hanger.extend();
         }else{
             Hanger.disable();
         }

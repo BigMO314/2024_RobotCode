@@ -24,8 +24,8 @@ public class Autonomous {
     private enum StartingPosition{
         DRIVER_STATION_WALL("Driver Station Wall"),
         SPEAKER_CENTER("Speaker Center"),
-        SPEAKER_SOURCE("Speaker Source"),
-        SPEAKER_AMP("Speaker Amp");
+        SPEAKER_SOURCE_SIDE("Speaker Source"),
+        SPEAKER_AMP_SIDE("Speaker Amp");
 
         private final String label;
         private StartingPosition(String label){
@@ -77,11 +77,10 @@ public class Autonomous {
                                 mStage++;
                                 break;
                             case 1:
-                                if(tmrStageTimeOut.get()>mSelectedStartDelay.time){
+                                if(tmrStageTimeOut.get() > mSelectedStartDelay.time){
                                     mStage++;
                                 }    
                                 break;
-                            
                             case 2:
                                 Console.logMsg("Starting Sequence\"" + Sequence.SHOOTANDTRAVEL.toString() + "\"-" + mSelectedStartingPosition.toString());
                                 mStage++;
@@ -127,18 +126,17 @@ public class Autonomous {
                             default:
                                 Robot.disableSubsystems();
                         } break;
-                    case SPEAKER_SOURCE:
+                    case SPEAKER_SOURCE_SIDE:
                         switch(mStage){
                             case 0:
                                 tmrStageTimeOut.reset();
                                 mStage++;
                                 break;
                             case 1:
-                                if(tmrStageTimeOut.get()>mSelectedStartDelay.time){
+                                if(tmrStageTimeOut.get() > mSelectedStartDelay.time){
                                     mStage++;
                                 }    
                                 break;
-                            
                             case 2:
                                 Console.logMsg("Starting Sequence\"" + Sequence.SHOOTANDTRAVEL.toString() + "\"-" + mSelectedStartingPosition.toString());
                                 mStage++;
@@ -184,7 +182,7 @@ public class Autonomous {
                             default:
                                 Robot.disableSubsystems();
                         } break;
-                    case SPEAKER_AMP:
+                    case SPEAKER_AMP_SIDE:
                         switch(mStage){ 
                             case 0:
                                 tmrStageTimeOut.reset();
@@ -272,7 +270,7 @@ public class Autonomous {
                     }
                 }
             },
-        TRAVEL("Back Up"){
+        TRAVEL("Travel"){
         @Override public void run(){
             switch(mStage){
                 case 0:
@@ -317,7 +315,7 @@ public class Autonomous {
                     case 0:
                         tmrStageTimeOut.reset();
                     case 1:
-                        if(tmrStageTimeOut.get()>mSelectedStartDelay.time){
+                        if(tmrStageTimeOut.get() > mSelectedStartDelay.time){
                             mStage++;
                         }
                         break;
@@ -327,7 +325,7 @@ public class Autonomous {
                         mStage++;
                         break;
                     case 3:
-                        if(tmrStageTimeOut.get()>0.25){
+                        if(tmrStageTimeOut.get() > 0.25){
                         mStage++;
                         }
                         break;
@@ -337,7 +335,7 @@ public class Autonomous {
                         mStage++;
                         break;
                     case 5:
-                        if(tmrStageTimeOut.get()>1.0){
+                        if(tmrStageTimeOut.get() > 1.0){
                             mStage++;
                         }
                     case 6:
@@ -349,7 +347,7 @@ public class Autonomous {
                 }
             }
         },
-        SHOOTCROSS("Shoot and Cross Field"){
+        SHOOTCROSS("Shoot and Cross Field"){//TODO:Make
             @Override public void run(){
                 switch(mSelectedStartingPosition){
                     case SPEAKER_CENTER:
@@ -365,7 +363,7 @@ public class Autonomous {
                 }
             }
         },
-        JUSTCROSS("Just Cross Field"){
+        JUSTCROSS("Just Cross Field"){//TODO: Make
             @Override public void run(){
                 switch(mStage){
                     case 0:
@@ -373,7 +371,7 @@ public class Autonomous {
                     mStage++;
                     break;
                 case 1:
-                    if(tmrStageTimeOut.get()>mSelectedStartDelay.time){
+                    if(tmrStageTimeOut.get() > mSelectedStartDelay.time){
                         mStage++;
                     }    
                     break;
@@ -383,7 +381,7 @@ public class Autonomous {
                     mStage++;
                     break;
                 case 3:
-                    if(Chassis.isAtDistance() || tmrStageTimeOut.get()>5.0){
+                    if(Chassis.isAtDistance() || tmrStageTimeOut.get() > 5.0){
                         mStage++;
                         break;
                     }
@@ -470,11 +468,12 @@ public class Autonomous {
         SmartDashboard.putData("Start Delay", chsStartDelay);
 
         chsStartingPosition.addOption(StartingPosition.SPEAKER_CENTER.label, StartingPosition.SPEAKER_CENTER);
-        chsStartingPosition.addOption(StartingPosition.SPEAKER_SOURCE.label, StartingPosition.SPEAKER_SOURCE);
-        chsStartingPosition.addOption(StartingPosition.SPEAKER_AMP.label, StartingPosition.SPEAKER_AMP);
+        chsStartingPosition.addOption(StartingPosition.SPEAKER_SOURCE_SIDE.label, StartingPosition.SPEAKER_SOURCE_SIDE);
+        chsStartingPosition.addOption(StartingPosition.SPEAKER_AMP_SIDE.label, StartingPosition.SPEAKER_AMP_SIDE);
         chsStartingPosition.setDefaultOption(StartingPosition.SPEAKER_CENTER.label, StartingPosition.SPEAKER_CENTER);
         SmartDashboard.putData("Starting Position", chsStartingPosition);
     }
+
     /**
      * Updates subsystems and pulls values
      */

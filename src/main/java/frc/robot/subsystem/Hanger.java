@@ -3,22 +3,36 @@ package frc.robot.subsystem;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.networktables.NetworkTable;
 import frc.molib.dashboard.Entry;
+import frc.molib.sensors.DigitalInput;
 import frc.robot.Robot;
+
 
 /**
  * Manages the Hanger
  */
+@SuppressWarnings("unused")
 public class Hanger {
 
     private static NetworkTable tblHanger = Robot.tblSubsystem.getSubTable("Hanger");
     private static Entry<Double> entWinchPosition = new Entry<Double>(tblHanger, "Winch Position");
+    private static Entry<Boolean> entLeftRetracted = new Entry<Boolean>(tblHanger, "Left Retracted");
+    private static Entry<Boolean> entRightRetracted = new Entry<Boolean>(tblHanger, "Right Retracted");
+    private static Entry<Boolean> entRetracted = new Entry<Boolean>(tblHanger, "Retracted");
+    private static Entry<Boolean> entHasExtended = new Entry<Boolean>(tblHanger, "Has Extended");
+    private static Entry<Boolean> entSafetyStopped = new Entry<Boolean>(tblHanger, "Safety Stopped");
+
+
+    private static DigitalInput limHangerRetracted_L = new DigitalInput(2, true);
+    private static DigitalInput limHangerRetracted_R = new DigitalInput(1, true);
+
+    
 
     private static TalonFX mtrWinch= new TalonFX(8);
-    private static double mHangerPower = 0.0;
+    private static double mWinchPower = 0.0;
     private static boolean mOverrideSafety = false;
+    private static boolean mHasExtended = false;
 
     /**
      * prevents other instances of the class being made
@@ -43,41 +57,46 @@ public class Hanger {
     
     public static void updateDashboard(){
         entWinchPosition.set(getPosition());
+        entLeftRetracted.set(limHangerRetracted_L.get());
+        entRightRetracted.set(limHangerRetracted_R.get());
+
+        //temp stuff
+        if(!isRetracted()){
+            mHasExtended = true;
+        }
+
+        entRetracted.set(isRetracted());
+        entHasExtended.set(mHasExtended);
+        entSafetyStopped.set(isRetracted() && mHasExtended);
     }
 
     /**
      * disables Hanger related motors
      */
     public static void disable(){
-        setHangerPower(0.0);
+        setWinchPower(0.0);
     }
 
-    public static void enableOverride() { mOverrideSafety = true; }
 
-    public static void disableOverride() { mOverrideSafety = false; }
+    //HANGER LIMITS
 
-
+    public static boolean isRetracted(){
+        return limHangerRetracted_L.get() || limHangerRetracted_R.get();
+    }
 
     /**
      * sets motor speeds for the hanger
      * @param power
      */
-    public static void setHangerPower(double power){
-        mHangerPower = power;
+    public static void setWinchPower(double power){
+        mWinchPower = power;
     }    
 
     /**
      * raises the Hanger
      */
-    public static void extend(){
-        setHangerPower(1.0);
-    }
-
-    /**
-     * lowers the Hanger
-     */
-    public static void retract(){
-        setHangerPower(-1.0);
+    public static void enable(){
+        setWinchPower(0.50);
     }
 
     public static double getPosition(){
@@ -88,17 +107,29 @@ public class Hanger {
         mtrWinch.setPosition(0.0);
     }
 
+    public static void resetFlag(){
+        mHasExtended = false;
+    }
+
     /**
      * loops and updates motor powers
      */
     public static void periodic(){
-        if(!mOverrideSafety) {
-            if(mtrWinch.getPosition().getValue() <= 0.0){
+        /*if(!mOverrideSafety) {
+            if(isRetracted()){
                 mHangerPower = MathUtil.clamp(mHangerPower, 0.0, 1.0);
             }
+        }*/
+
+        if(!isRetracted()){
+            mHasExtended = true;
         }
 
-        mtrWinch.set(mHangerPower);
+        if(isRetracted() && mHasExtended){
+            setWinchPower(0.0);
+        }
+
+        mtrWinch.set(mWinchPower);
 
     }
 }

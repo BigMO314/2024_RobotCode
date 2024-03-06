@@ -78,15 +78,15 @@ public class Test {
         @Override public boolean get(){return ctlOperator.getLeftBumper();}
     };
 
-    private static Button btnHanger_Reset = new Button() {
+    private static Button btnHanger_ResetFlag = new Button() {
         @Override public boolean get() { return ctlDriver.getStartButton() && ctlDriver.getBackButton(); }
     };
 
-    private static Button btnHanger_Extend = new Button() {
+    private static Button btnHanger_Enable = new Button() {
         @Override public boolean get() { return ctlDriver.getPOV() == 0; }
     };
 
-    private static Button btnHanger_Retract = new Button() {
+    private static Button btnHanger_Reverse = new Button() {
         @Override public boolean get() { return ctlDriver.getPOV() == 180; }
     };
 
@@ -102,7 +102,7 @@ public class Test {
         ButtonManager.clearFlags();
         
         Chassis.disablePIDs();
-        Hanger.enableOverride();
+        //Hanger.enableOverride();
         Robot.disableSubsystems();
     }
 
@@ -176,13 +176,14 @@ public class Test {
             Chassis.goToAngle(90.0);
         }
 
-        if(btnHanger_Reset.getPressed())
-            Hanger.resetPosition();
+        if(btnHanger_ResetFlag.getPressed()){
+            Hanger.resetFlag();
+        }
 
-        if(btnHanger_Extend.get())
-            Hanger.setHangerPower(0.20);
-        else if(btnHanger_Retract.get())
-            Hanger.setHangerPower(-0.20);
+        if(btnHanger_Enable.get())
+            Hanger.setWinchPower(0.20);
+        else if(btnHanger_Reverse.get())
+            Hanger.setWinchPower(-0.20);
         else
             Hanger.disable();
         

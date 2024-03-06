@@ -85,6 +85,10 @@ public class Teleoperated {
     private static final Button btnAmpShot = new Button(){
         @Override public boolean get() {return ctlOperator.getRightBumper(); }
     };
+
+    private static final Button btnFieldShot = new Button(){
+        @Override public boolean get() {return ctlOperator.getLeftBumper(); }
+    };
     
     //Speed variability
     private static final Button btnBoost = new Button(){
@@ -127,7 +131,7 @@ public class Teleoperated {
         @Override public boolean get() { return ctlOperator.getStartButton(); }
     };
 
-    private static final Button btnExtendHanger = new Button(){
+    private static final Button btnEnableHanger = new Button(){
         @Override public boolean get() { return ctlDriver.getPOV() == 0; }
     };
 
@@ -258,6 +262,13 @@ public class Teleoperated {
             } else {
                 Runway.disableDirector();
             }
+        } else if (btnFieldShot.get()){
+            Runway.fieldShot();
+            if(tmrSpinUp.get() > 0.25){
+                Runway.enableDirector();
+            } else {
+                Runway.disableDirector();
+            }
         } else if (btnIntake.get()) {
             Runway.reverseReels();
             Runway.reverseDirector();
@@ -266,7 +277,7 @@ public class Teleoperated {
             Runway.disable();
             tmrSpinUp.reset();
         }
-
+/*
         //Hanger function
         if(btnHanger_Override.get()) {
             Hanger.enableOverride();
@@ -277,11 +288,9 @@ public class Teleoperated {
         if(btnHanger_Reset.getPressed()) {
             Hanger.resetPosition();
         }
-
-        if(btnRetractHanger.get()){
-            Hanger.retract();
-        }else if(btnExtendHanger.get()){
-            Hanger.extend();
+*/
+        if(btnEnableHanger.get()){
+            Hanger.enable();
         }else{
             Hanger.disable();
         }

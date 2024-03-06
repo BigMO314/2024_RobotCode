@@ -92,6 +92,10 @@ public class Runway {
         setReelPower(0.15, 0.20);
     }
 
+    public static void fieldShot(){
+        setReelPower(1.00, 1.00);
+    }
+
     /**
      * Sets the reel power
      * @param topPower [-1.0 to 1.0]

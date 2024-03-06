@@ -20,7 +20,7 @@ public class Disabled {
     public static void init(){
         Chassis.disableBrake();
         new XboxController(0).setRumble(0.0);
-        Hanger.disableOverride();
+        //Hanger.disableOverride();
     }
 
     /**

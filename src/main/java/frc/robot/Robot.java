@@ -77,6 +77,7 @@ public class Robot extends TimedRobot {
 
         Chassis.updateDashboard();
         Runway.updateDashboard();
+        Hanger.updateDashboard();
     }
 
     @Override

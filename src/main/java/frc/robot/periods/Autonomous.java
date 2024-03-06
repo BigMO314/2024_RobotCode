@@ -267,6 +267,8 @@ public class Autonomous {
                             default:
                                 Robot.disableSubsystems();
                         }break;
+                    default:
+                        //FIXME: Appeasing the warning only
                     }
                 }
             },
@@ -359,7 +361,9 @@ public class Autonomous {
                                 break;
                             default:
                                 Robot.disableSubsystems();   
-                        }
+                        } break;
+                    default:
+                        //FIXME: Appeasing the warnings only
                 }
             }
         },

@@ -72,6 +72,9 @@ public class Chassis {//make the Chassis class
         pidDrive_Distance.configOutputRange(-0.5, 0.5);
         pidDrive_Distance.configAtSetpointTime(0.25);
         pidDrive_Distance.setTolerance(0.25);
+
+        disableDistancePID();
+        disableAnglePID();
     }
     
     /**

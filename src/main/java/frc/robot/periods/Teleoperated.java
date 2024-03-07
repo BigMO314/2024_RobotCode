@@ -87,7 +87,7 @@ public class Teleoperated {
     };
 
     private static final Button btnFieldShot = new Button(){
-        @Override public boolean get() {return ctlOperator.getLeftBumper(); }
+        @Override public boolean get() {return ctlOperator.getBButton(); }
     };
     
     //Speed variability

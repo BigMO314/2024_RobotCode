@@ -111,14 +111,25 @@ public class Autonomous {
                             case 8:
                                 Console.logMsg("Backing up");
                                 Chassis.resetDistance();
-                                Chassis.goToDistance(-48.0);
+                                Chassis.setDrivePower(-0.30, -0.30);
                                 tmrStageTimeOut.reset();
                                 mStage++;
                                 break;
                             case 9:
-                                if(Chassis.isAtDistance() || tmrStageTimeOut.get() > 2.5) mStage++;
+                                if((Chassis.getDriveDistance() <= -48.0)|| tmrStageTimeOut.get() > 2.5) mStage++;
                                 break;
                             case 10:
+                                Console.logMsg("and Turning");
+                                Chassis.resetAngle();
+                                Chassis.disableDistancePID();
+                                Chassis.goToAngle(180);
+                                tmrStageTimeOut.reset();
+                                mStage++;
+                                break;
+                            case 11:
+                                if(Chassis.isAtAngle() || tmrStageTimeOut.get() > 2.5) mStage++;
+                                break;
+                            case 12:
                                 Console.logMsg("and POSE");
                                 Robot.disableSubsystems();
                                 mStage++;
@@ -167,12 +178,12 @@ public class Autonomous {
                             case 8:
                                 Console.logMsg("Backing up");
                                 Chassis.resetDistance();
-                                Chassis.goToDistance(-96.0);
+                                Chassis.setDrivePower(-.30, -.30);
                                 tmrStageTimeOut.reset();
                                 mStage++;
                                 break;
                             case 9:
-                                if(Chassis.isAtDistance() || tmrStageTimeOut.get() > 2.5) mStage++;
+                                if((Chassis.getDriveDistance() <= -96.00) || tmrStageTimeOut.get() > 2.5) mStage++;
                                 break;
                             case 10:
                                 Console.logMsg("done");
@@ -189,7 +200,7 @@ public class Autonomous {
                                 mStage++;
                                 break;
                             case 1:
-                                if(tmrStageTimeOut.get()>mSelectedStartDelay.time){
+                                if(tmrStageTimeOut.get() > mSelectedStartDelay.time){
                                     mStage++;
                                 }    
                                 break;
@@ -223,21 +234,22 @@ public class Autonomous {
                             case 8:
                                 Console.logMsg("Backing up");
                                 Chassis.resetDistance();
+                                Chassis.setDrivePower(-0.30, -0.30);
                                 Chassis.goToDistance(-24.0);
                                 tmrStageTimeOut.reset();
                                 mStage++;
                                 break;
                             case 9:
-                                if(Chassis.isAtDistance() || tmrStageTimeOut.get() > 2.5) mStage++;
+                                if((Chassis.getDriveDistance() <= -24.0) || tmrStageTimeOut.get() > 2.5) mStage++;
                                 break;
                             case 10:
                                 Console.logMsg("and Turning");
                                 Chassis.resetAngle();
                                 Chassis.disableDistancePID();
                                if(DriverStation.getAlliance().get() == Alliance.Red){ 
-                                    Chassis.goToAngle(-30.00);
+                                    Chassis.goToAngle(200.00);
                                 }else{
-                                    Chassis.goToAngle(30.00);
+                                    Chassis.goToAngle(-200.00);
                                 }
                                 tmrStageTimeOut.reset();
                                 mStage++;
@@ -246,18 +258,18 @@ public class Autonomous {
                                 if(Chassis.isAtAngle() || tmrStageTimeOut.get() > 2.5) mStage++;
                                 break;
                             case 12:
-                                Console.logMsg("Good, now backing up");
+                                Console.logMsg("Good, now going forward");
                                 mStage++;
                                 break;
                             case 13:
                                 Chassis.disableAnglePID();
                                 Chassis.resetDistance();
-                                Chassis.goToDistance(-36.0);
+                                Chassis.setDrivePower(0.30, 0.30);
                                 tmrStageTimeOut.reset();
                                 mStage++;
                                 break;
                             case 14:
-                                if(Chassis.isAtDistance() || tmrStageTimeOut.get() > 2.5) mStage++;
+                                if((Chassis.getDriveDistance() >= 60.0) || tmrStageTimeOut.get() > 2.5) mStage++;
                                 break;
                             case 15:
                                 Console.logMsg("done");
@@ -280,7 +292,7 @@ public class Autonomous {
                     mStage++;
                     break;
                 case 1:
-                    if(tmrStageTimeOut.get()>mSelectedStartDelay.time){
+                    if(tmrStageTimeOut.get() > mSelectedStartDelay.time){
                         mStage++;
                     }    
                     break;
@@ -289,13 +301,14 @@ public class Autonomous {
                     mStage++;
                     break;
                 case 3:
-                    Console.logMsg("Starting Drive Backwards");
-                    Chassis.goToDistance(-96.0);
+                    Console.logMsg("Starting Drive Forwards");
+                    Chassis.resetDistance();
+                    Chassis.setDrivePower(0.30, 0.30);
                     tmrStageTimeOut.reset();
                     mStage++;
                     break;
                 case 4:
-                    if(Chassis.isAtDistance() || tmrStageTimeOut.get() > 2.5) mStage++;
+                    if((Chassis.getDriveDistance() >= 96.0) || tmrStageTimeOut.get() > 2.5) mStage++;
                     break;
                 case 5:
                     Console.logMsg("Conditions met :)");
@@ -316,12 +329,15 @@ public class Autonomous {
                 switch ((mStage)) {
                     case 0:
                         tmrStageTimeOut.reset();
+                        mStage++;
+                        break;
                     case 1:
                         if(tmrStageTimeOut.get() > mSelectedStartDelay.time){
                             mStage++;
                         }
                         break;
                     case 2:
+                        Console.logMsg("Spinning Reels");
                         Runway.speakerShot();
                         tmrStageTimeOut.reset();
                         mStage++;
@@ -332,6 +348,7 @@ public class Autonomous {
                         }
                         break;
                     case 4:
+                        Console.logMsg("Shooting");
                         Runway.enableDirector();
                         tmrStageTimeOut.reset();
                         mStage++;
@@ -340,9 +357,12 @@ public class Autonomous {
                         if(tmrStageTimeOut.get() > 1.0){
                             mStage++;
                         }
+                        break;
                     case 6:
+                        Console.logMsg("Done");
                         Robot.disableSubsystems();
-                    break;
+                        mStage++;
+                        break;
                     default:
                         Robot.disableSubsystems();
                         break;
@@ -370,7 +390,7 @@ public class Autonomous {
         JUSTCROSS("Just Cross Field"){//TODO: Make
             @Override public void run(){
                 switch(mStage){
-                    case 0:
+                case 0:
                     tmrStageTimeOut.reset();
                     mStage++;
                     break;
@@ -380,20 +400,24 @@ public class Autonomous {
                     }    
                     break;
                 case 2:
-                    Chassis.goToDistance(-96.0);
+                    Console.logMsg("Drive");
+                    Chassis.setDrivePower(0.30, 0.30);
+                    Chassis.resetDistance();
                     tmrStageTimeOut.reset();
                     mStage++;
                     break;
                 case 3:
-                    if(Chassis.isAtDistance() || tmrStageTimeOut.get() > 5.0){
+                    if((Chassis.getDriveDistance() >= 180.0) || tmrStageTimeOut.get() > 5.0){
                         mStage++;
-                        break;
                     }
+                    break;
                 case 4:
+                    Console.logMsg("Stop");
                     Robot.disableSubsystems();
                     mStage++;
                     break;
-                default: Robot.disableSubsystems();
+                default: 
+                    Robot.disableSubsystems();
                 }
             }
         };
@@ -457,11 +481,11 @@ public class Autonomous {
      */
     public static void initDashboard(){
         chsSequence.addOption(Sequence.NOTHING.label, Sequence.NOTHING);
-        chsSequence.addOption(Sequence.SHOOTANDTRAVEL.label, Sequence.SHOOTANDTRAVEL);
-        chsSequence.addOption(Sequence.JUSTCROSS.label, Sequence.JUSTCROSS);
-        chsSequence.addOption(Sequence.SHOOTCROSS.label, Sequence.SHOOTCROSS);
         chsSequence.addOption(Sequence.SHOOTSTAY.label, Sequence.SHOOTSTAY);
+        chsSequence.addOption(Sequence.SHOOTANDTRAVEL.label, Sequence.SHOOTANDTRAVEL);
+        chsSequence.addOption(Sequence.SHOOTCROSS.label, Sequence.SHOOTCROSS);
         chsSequence.addOption(Sequence.TRAVEL.label, Sequence.TRAVEL);
+        chsSequence.addOption(Sequence.JUSTCROSS.label, Sequence.JUSTCROSS);
         chsSequence.setDefaultOption(Sequence.NOTHING.label, Sequence.NOTHING);
         SmartDashboard.putData("Sequence", chsSequence);
 
@@ -474,6 +498,7 @@ public class Autonomous {
         chsStartingPosition.addOption(StartingPosition.SPEAKER_CENTER.label, StartingPosition.SPEAKER_CENTER);
         chsStartingPosition.addOption(StartingPosition.SPEAKER_SOURCE_SIDE.label, StartingPosition.SPEAKER_SOURCE_SIDE);
         chsStartingPosition.addOption(StartingPosition.SPEAKER_AMP_SIDE.label, StartingPosition.SPEAKER_AMP_SIDE);
+        chsStartingPosition.addOption(StartingPosition.DRIVER_STATION_WALL.label, StartingPosition.DRIVER_STATION_WALL);
         chsStartingPosition.setDefaultOption(StartingPosition.SPEAKER_CENTER.label, StartingPosition.SPEAKER_CENTER);
         SmartDashboard.putData("Starting Position", chsStartingPosition);
     }

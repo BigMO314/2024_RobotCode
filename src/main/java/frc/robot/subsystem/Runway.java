@@ -89,7 +89,7 @@ public class Runway {
     }
 
     public static void ampShot(){
-        setReelPower(0.15, 0.20);
+        setReelPower(0.095, 0.215);
     }
 
     public static void fieldShot(){

@@ -182,7 +182,7 @@ public class Teleoperated {
         chsDriveType.addOption(DriveType.ARKADE.label, DriveType.ARKADE);
         chsDriveType.addOption(DriveType.CHEDDER.label, DriveType.CHEDDER);
 
-        chsDriveType.setDefaultOption(DriveType.TANK.label, DriveType.TANK);
+        chsDriveType.setDefaultOption(DriveType.CHEDDER.label, DriveType.CHEDDER);
 
         SmartDashboard.putData("Drive Type", chsDriveType);
     }

@@ -24,8 +24,8 @@ public class Autonomous {
     private enum StartingPosition{
         DRIVER_STATION_WALL("Driver Station Wall"),
         SPEAKER_CENTER("Speaker Center"),
-        SPEAKER_SOURCE_SIDE("Speaker Source"),
-        SPEAKER_AMP_SIDE("Speaker Amp");
+        SPEAKER_SOURCE_SIDE("Speaker Source Side"),
+        SPEAKER_AMP_SIDE("Speaker Amp Side");
 
         private final String label;
         private StartingPosition(String label){
@@ -59,15 +59,14 @@ public class Autonomous {
             @Override public void run(){
                 switch(mStage){
                     case 0:
-                        Robot.disableSubsystems();
+                        Console.logMsg("Doing...nothing");
                         mStage++;
-                        break;
                     default:
                         Robot.disableSubsystems();
                     }
                 }
             },
-        SHOOTANDTRAVEL("Shoot and Travel"){
+        SHOOTTRAVEL("Shoot and Travel"){
             @Override public void run(){
                 switch(mSelectedStartingPosition){
                     case SPEAKER_CENTER:
@@ -82,7 +81,7 @@ public class Autonomous {
                                 }    
                                 break;
                             case 2:
-                                Console.logMsg("Starting Sequence\"" + Sequence.SHOOTANDTRAVEL.toString() + "\"-" + mSelectedStartingPosition.toString());
+                                Console.logMsg("Starting Sequence\"" + Sequence.SHOOTTRAVEL.toString() + "\"-" + mSelectedStartingPosition.toString());
                                 mStage++;
                                 break;
                             case 3:
@@ -149,7 +148,7 @@ public class Autonomous {
                                 }    
                                 break;
                             case 2:
-                                Console.logMsg("Starting Sequence\"" + Sequence.SHOOTANDTRAVEL.toString() + "\"-" + mSelectedStartingPosition.toString());
+                                Console.logMsg("Starting Sequence\"" + Sequence.SHOOTTRAVEL.toString() + "\"-" + mSelectedStartingPosition.toString());
                                 mStage++;
                                 break;
                             case 3:
@@ -178,14 +177,35 @@ public class Autonomous {
                             case 8:
                                 Console.logMsg("Backing up");
                                 Chassis.resetDistance();
-                                Chassis.setDrivePower(-.30, -.30);
+                                if(DriverStation.getAlliance().get() == Alliance.Red){ 
+                                    Chassis.setDrivePower(-.25, -.30);
+                                }else{
+                                    Chassis.setDrivePower(-.30, -.25);
+                                }
                                 tmrStageTimeOut.reset();
                                 mStage++;
                                 break;
                             case 9:
-                                if((Chassis.getDriveDistance() <= -96.00) || tmrStageTimeOut.get() > 2.5) mStage++;
+                                if((Chassis.getDriveDistance() <= -144.00) || tmrStageTimeOut.get() > 2.5) mStage++;
                                 break;
+                            //TODO: Joe check
+                            //TODO: Fix turn angles
                             case 10:
+                                Console.logMsg("and Turning");
+                                Chassis.resetAngle();
+                                Chassis.disableDistancePID();
+                                if(DriverStation.getAlliance().get() == Alliance.Red){ 
+                                    Chassis.goToAngle(-150.00);
+                                }else{
+                                    Chassis.goToAngle(150.00);
+                                }
+                                tmrStageTimeOut.reset();
+                                mStage++;
+                                break;
+                            case 11:
+                                if(Chassis.isAtAngle() || tmrStageTimeOut.get() > 2.5) mStage++;
+                                break;
+                            case 12:
                                 Console.logMsg("done");
                                 Robot.disableSubsystems();
                                 mStage++;
@@ -205,7 +225,7 @@ public class Autonomous {
                                 }    
                                 break;
                             case 2:
-                                Console.logMsg("Starting Sequence\"" + Sequence.SHOOTANDTRAVEL.toString() + "\"-" + mSelectedStartingPosition.toString());
+                                Console.logMsg("Starting Sequence\"" + Sequence.SHOOTTRAVEL.toString() + "\"-" + mSelectedStartingPosition.toString());
                                 mStage++;
                                 break;
                             case 3:
@@ -246,10 +266,10 @@ public class Autonomous {
                                 Console.logMsg("and Turning");
                                 Chassis.resetAngle();
                                 Chassis.disableDistancePID();
-                               if(DriverStation.getAlliance().get() == Alliance.Red){ 
-                                    Chassis.goToAngle(200.00);
+                                if(DriverStation.getAlliance().get() == Alliance.Red){ 
+                                    Chassis.goToAngle(150.00);
                                 }else{
-                                    Chassis.goToAngle(-200.00);
+                                    Chassis.goToAngle(-150.00);
                                 }
                                 tmrStageTimeOut.reset();
                                 mStage++;
@@ -280,11 +300,17 @@ public class Autonomous {
                                 Robot.disableSubsystems();
                         }break;
                     default:
-                        //FIXME: Appeasing the warning only
+                        switch(mStage){
+                            case 0:
+                                Console.logMsg("Invalid starting position.");
+                                mStage++;
+                            default:
+                                Robot.disableSubsystems();
+                        }
                     }
                 }
             },
-        TRAVEL("Travel"){
+        JUSTTRAVEL("Just Travel"){
         @Override public void run(){
             switch(mStage){
                 case 0:
@@ -297,7 +323,7 @@ public class Autonomous {
                     }    
                     break;
                 case 2:
-                    Console.logMsg("Starting Sequence\"" + Sequence.TRAVEL.toString() + "\"-" + mSelectedStartingPosition.toString());
+                    Console.logMsg("Starting Sequence\"" + Sequence.JUSTTRAVEL.toString() + "\"-" + mSelectedStartingPosition.toString());
                     mStage++;
                     break;
                 case 3:
@@ -316,7 +342,7 @@ public class Autonomous {
                     mStage++;
                     break;
                 case 6:
-                    Console.logMsg("Sequence Complete\"" + Sequence.TRAVEL.toString() + "\"-" + mSelectedStartingPosition.toString());
+                    Console.logMsg("Sequence Complete\"" + Sequence.JUSTTRAVEL.toString() + "\"-" + mSelectedStartingPosition.toString());
                     mStage++;
                     break;
                 default:
@@ -369,7 +395,7 @@ public class Autonomous {
                 }
             }
         },
-        SHOOTCROSS("Shoot and Cross Field"){//TODO:Make
+        SHOOTCROSS("DO NOT USE - Shoot and Cross Field"){//TODO:Make
             @Override public void run(){
                 switch(mSelectedStartingPosition){
                     case SPEAKER_CENTER:
@@ -383,7 +409,13 @@ public class Autonomous {
                                 Robot.disableSubsystems();   
                         } break;
                     default:
-                        //FIXME: Appeasing the warnings only
+                        switch(mStage){
+                            case 0:
+                                Console.logMsg("Invalid starting position.");
+                                mStage++;
+                            default:
+                                Robot.disableSubsystems();
+                        }
                 }
             }
         },
@@ -482,9 +514,9 @@ public class Autonomous {
     public static void initDashboard(){
         chsSequence.addOption(Sequence.NOTHING.label, Sequence.NOTHING);
         chsSequence.addOption(Sequence.SHOOTSTAY.label, Sequence.SHOOTSTAY);
-        chsSequence.addOption(Sequence.SHOOTANDTRAVEL.label, Sequence.SHOOTANDTRAVEL);
-        chsSequence.addOption(Sequence.SHOOTCROSS.label, Sequence.SHOOTCROSS);
-        chsSequence.addOption(Sequence.TRAVEL.label, Sequence.TRAVEL);
+        chsSequence.addOption(Sequence.SHOOTTRAVEL.label, Sequence.SHOOTTRAVEL);
+        //chsSequence.addOption(Sequence.SHOOTCROSS.label, Sequence.SHOOTCROSS);
+        chsSequence.addOption(Sequence.JUSTTRAVEL.label, Sequence.JUSTTRAVEL);
         chsSequence.addOption(Sequence.JUSTCROSS.label, Sequence.JUSTCROSS);
         chsSequence.setDefaultOption(Sequence.NOTHING.label, Sequence.NOTHING);
         SmartDashboard.putData("Sequence", chsSequence);

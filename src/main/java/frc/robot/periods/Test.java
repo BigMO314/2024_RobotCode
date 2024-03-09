@@ -141,7 +141,7 @@ public class Test {
             Runway.disableLED();
         }
 */
-
+/*
         if(btnResetDistance.get()){
             Chassis.resetDistance();
             Chassis.resetAngle();
@@ -175,6 +175,7 @@ public class Test {
             Chassis.resetAngle();
             Chassis.goToAngle(90.0);
         }
+        */
 
         if(btnHanger_ResetFlag.getPressed()){
             Hanger.resetFlag();

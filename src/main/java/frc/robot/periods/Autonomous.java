@@ -1,14 +1,16 @@
 package frc.robot.periods;
 
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.molib.buttons.ButtonManager;
 import frc.molib.utilities.Console;
 import frc.robot.Robot;
+import frc.robot.subsystem.Backstage;
 import frc.robot.subsystem.Chassis;
+import frc.robot.subsystem.Hanger;
 import frc.robot.subsystem.Runway;
 //TODO: end backed up pretty far(10 ft) and turned around ready to go to feeder station
 //TODO: make a wait/delay before auton moves &or start
@@ -66,6 +68,91 @@ public class Autonomous {
                     }
                 }
             },
+        SHOOTSTAY("Shoot and Stay"){
+            @Override public void run(){
+                switch ((mStage)) {
+                    case 0:
+                        tmrStageTimeOut.reset();
+                        mStage++;
+                        break;
+                    case 1:
+                        if(tmrStageTimeOut.get() > mSelectedStartDelay.time){
+                            mStage++;
+                        }
+                        break;
+                    case 2:
+                        Console.logMsg("Spinning Reels");
+                        Runway.speakerShot();
+                        tmrStageTimeOut.reset();
+                        mStage++;
+                        break;
+                    case 3:
+                        if(tmrStageTimeOut.get() > 0.25){
+                        mStage++;
+                        }
+                        break;
+                    case 4:
+                        Console.logMsg("Shooting");
+                        Runway.enableDirector();
+                        tmrStageTimeOut.reset();
+                        mStage++;
+                        break;
+                    case 5:
+                        if(tmrStageTimeOut.get() > 1.0){
+                            mStage++;
+                        }
+                        break;
+                    case 6:
+                        Console.logMsg("Done");
+                        Robot.disableSubsystems();
+                        mStage++;
+                        break;
+                    default:
+                        Robot.disableSubsystems();
+                        break;
+                }
+            }
+        },
+        JUSTTRAVEL("Just Travel"){
+        @Override public void run(){
+            switch(mStage){
+                case 0:
+                    tmrStageTimeOut.reset();
+                    mStage++;
+                    break;
+                case 1:
+                    if(tmrStageTimeOut.get() > mSelectedStartDelay.time){
+                        mStage++;
+                    }    
+                    break;
+                case 2:
+                    Console.logMsg("Starting Sequence\"" + Sequence.JUSTTRAVEL.toString() + "\"-" + mSelectedStartingPosition.toString());
+                    mStage++;
+                    break;
+                case 3:
+                    Console.logMsg("Starting Drive Forwards");
+                    Chassis.resetDistance();
+                    Chassis.setDrivePower(0.30, 0.30);
+                    tmrStageTimeOut.reset();
+                    mStage++;
+                    break;
+                case 4:
+                    if((Chassis.getDriveDistance() >= 96.0) || tmrStageTimeOut.get() > 2.5) mStage++;
+                    break;
+                case 5:
+                    Console.logMsg("Conditions met :)");
+                    Chassis.disable();
+                    mStage++;
+                    break;
+                case 6:
+                    Console.logMsg("Sequence Complete\"" + Sequence.JUSTTRAVEL.toString() + "\"-" + mSelectedStartingPosition.toString());
+                    mStage++;
+                    break;
+                default:
+                    Robot.disableSubsystems();
+                    }
+                }
+        },
         SHOOTTRAVEL("Shoot and Travel"){
             @Override public void run(){
                 switch(mSelectedStartingPosition){
@@ -188,8 +275,6 @@ public class Autonomous {
                             case 9:
                                 if((Chassis.getDriveDistance() <= -144.00) || tmrStageTimeOut.get() > 2.5) mStage++;
                                 break;
-                            //TODO: Joe check
-                            //TODO: Fix turn angles
                             case 10:
                                 Console.logMsg("and Turning");
                                 Chassis.resetAngle();
@@ -310,103 +395,391 @@ public class Autonomous {
                     }
                 }
             },
-        JUSTTRAVEL("Just Travel"){
-        @Override public void run(){
-            switch(mStage){
-                case 0:
-                    tmrStageTimeOut.reset();
-                    mStage++;
-                    break;
-                case 1:
-                    if(tmrStageTimeOut.get() > mSelectedStartDelay.time){
-                        mStage++;
-                    }    
-                    break;
-                case 2:
-                    Console.logMsg("Starting Sequence\"" + Sequence.JUSTTRAVEL.toString() + "\"-" + mSelectedStartingPosition.toString());
-                    mStage++;
-                    break;
-                case 3:
-                    Console.logMsg("Starting Drive Forwards");
-                    Chassis.resetDistance();
-                    Chassis.setDrivePower(0.30, 0.30);
-                    tmrStageTimeOut.reset();
-                    mStage++;
-                    break;
-                case 4:
-                    if((Chassis.getDriveDistance() >= 96.0) || tmrStageTimeOut.get() > 2.5) mStage++;
-                    break;
-                case 5:
-                    Console.logMsg("Conditions met :)");
-                    Chassis.disable();
-                    mStage++;
-                    break;
-                case 6:
-                    Console.logMsg("Sequence Complete\"" + Sequence.JUSTTRAVEL.toString() + "\"-" + mSelectedStartingPosition.toString());
-                    mStage++;
-                    break;
-                default:
-                    Robot.disableSubsystems();
-                    }
-                }
-            },
-        SHOOTSTAY("Shoot and Stay"){
-            @Override public void run(){
-                switch ((mStage)) {
-                    case 0:
-                        tmrStageTimeOut.reset();
-                        mStage++;
-                        break;
-                    case 1:
-                        if(tmrStageTimeOut.get() > mSelectedStartDelay.time){
-                            mStage++;
-                        }
-                        break;
-                    case 2:
-                        Console.logMsg("Spinning Reels");
-                        Runway.speakerShot();
-                        tmrStageTimeOut.reset();
-                        mStage++;
-                        break;
-                    case 3:
-                        if(tmrStageTimeOut.get() > 0.25){
-                        mStage++;
-                        }
-                        break;
-                    case 4:
-                        Console.logMsg("Shooting");
-                        Runway.enableDirector();
-                        tmrStageTimeOut.reset();
-                        mStage++;
-                        break;
-                    case 5:
-                        if(tmrStageTimeOut.get() > 1.0){
-                            mStage++;
-                        }
-                        break;
-                    case 6:
-                        Console.logMsg("Done");
-                        Robot.disableSubsystems();
-                        mStage++;
-                        break;
-                    default:
-                        Robot.disableSubsystems();
-                        break;
-                }
-            }
-        },
-        SHOOTCROSS("DO NOT USE - Shoot and Cross Field"){//TODO:Make
+        SHOOTANDSHOOT("Shoot and Shoot"){
             @Override public void run(){
                 switch(mSelectedStartingPosition){
                     case SPEAKER_CENTER:
-                        switch (mStage) {
+                        switch(mStage){
                             case 0:
+                                tmrStageTimeOut.reset();
+                                mStage++;
+                                break;
+                            case 1:
+                                if(tmrStageTimeOut.get() > mSelectedStartDelay.time){
+                                    mStage++;
+                                }    
+                                break;
+                            case 2:
+                                Console.logMsg("Starting Sequence\"" + Sequence.SHOOTTRAVEL.toString() + "\"-" + mSelectedStartingPosition.toString());
+                                mStage++;
+                                break;
+                            case 3:
+                                Console.logMsg("Charging Reels");
                                 Runway.speakerShot();
                                 tmrStageTimeOut.reset();
                                 mStage++;
                                 break;
+                            case 4:
+                                if (tmrStageTimeOut.get() > 0.25) mStage++;
+                                break;
+                            case 5:
+                                Console.logMsg("Shooting");
+                                Runway.enableDirector();
+                                tmrStageTimeOut.reset();
+                                mStage++;
+                                break;
+                            case 6:
+                                if (tmrStageTimeOut.get() > 1.0) mStage++;
+                                break;
+                            case 7:
+                                Console.logMsg("Cut");
+                                Runway.disable();
+                                mStage++;
+                                break;
+                            case 8:
+                                Console.logMsg("Backing up");
+                                Chassis.resetDistance();
+                                Chassis.setDrivePower(-0.30, -0.30);
+                                tmrStageTimeOut.reset();
+                                mStage++;
+                                break;
+                            case 9:
+                                if((Chassis.getDriveDistance() <= -48.0)|| tmrStageTimeOut.get() > 2.5) mStage++;
+                                break;
+                            case 10:
+                            //TODO: Fix turn aka REMOVE
+                                Console.logMsg("and Turning");
+                                Chassis.resetAngle();
+                                Chassis.disableDistancePID();
+                                Chassis.goToAngle(180);
+                                tmrStageTimeOut.reset();
+                                mStage++;
+                                break;
+                            case 11:
+                                if(Chassis.isAtAngle() || tmrStageTimeOut.get() > 2.5) mStage++;
+                                break;
+                            case 12:
+                            //TODO: Fix to require picking up note and running back intake
+                                Console.logMsg("Backing up");
+                                Chassis.resetDistance();
+                                Chassis.setDrivePower(-0.30, -0.30);
+                                tmrStageTimeOut.reset();
+                                mStage++;
+                                break;
+                            case 13:
+                            //TODO: Fix to require picking up note
+                                if((Chassis.getDriveDistance() <= -48.0)|| tmrStageTimeOut.get() > 2.5) mStage++;
+                                break;
+                            case 14:
+                            //TODO: Fix turn aka REMOVE
+                                Console.logMsg("Turning to face speaker");
+                                Chassis.resetAngle();
+                                Chassis.disableDistancePID();
+                                Chassis.goToAngle(180);
+                                tmrStageTimeOut.reset();
+                                mStage++;
+                                break;
+                            case 15:
+                                if(Chassis.isAtAngle() || tmrStageTimeOut.get() > 2.5) mStage++;
+                                break;
+                            case 16:
+                            //TODO: Fix distance
+                                Console.logMsg("Driving towards speaker");
+                                Chassis.resetDistance();
+                                Chassis.setDrivePower(-0.30, -0.30);
+                                tmrStageTimeOut.reset();
+                                mStage++;
+                                break;
+                            case 17:
+                                if((Chassis.getDriveDistance() <= -48.0)|| tmrStageTimeOut.get() > 2.5) mStage++;
+                                break;
+                            case 18:
+                                Console.logMsg("Charging Reels");
+                                Runway.speakerShot();
+                                tmrStageTimeOut.reset();
+                                mStage++;
+                                break;
+                            case 19:
+                                if (tmrStageTimeOut.get() > 0.25) mStage++;
+                                break;
+                            case 20:
+                                Console.logMsg("Shooting");
+                                Runway.enableDirector();
+                                tmrStageTimeOut.reset();
+                                mStage++;
+                                break;
+                            case 21:
+                                if (tmrStageTimeOut.get() > 1.0) mStage++;
+                                break;
+                            case 22:
+                                Console.logMsg("Cut");
+                                Runway.disable();
+                                mStage++;
+                                break;
+                            case 23:
+                                Console.logMsg("and POSE");
+                                Robot.disableSubsystems();
+                                mStage++;
+                                break;
                             default:
-                                Robot.disableSubsystems();   
+                                Robot.disableSubsystems();
+                        } break;
+                    case SPEAKER_SOURCE_SIDE:
+                        switch(mStage){
+                            case 0:
+                                tmrStageTimeOut.reset();
+                                mStage++;
+                                break;
+                            case 1:
+                                if(tmrStageTimeOut.get() > mSelectedStartDelay.time){
+                                    mStage++;
+                                }    
+                                break;
+                            case 2:
+                                Console.logMsg("Starting Sequence\"" + Sequence.SHOOTTRAVEL.toString() + "\"-" + mSelectedStartingPosition.toString());
+                                mStage++;
+                                break;
+                            case 3:
+                                Console.logMsg("Charging Reels");
+                                Runway.speakerShot();
+                                tmrStageTimeOut.reset();
+                                mStage++;
+                                break;
+                            case 4:
+                                if (tmrStageTimeOut.get() > 0.25) mStage++;
+                                break;
+                            case 5:
+                                Console.logMsg("Shooting");
+                                Runway.enableDirector();
+                                tmrStageTimeOut.reset();
+                                mStage++;
+                                break;
+                            case 6:
+                                if (tmrStageTimeOut.get() > 1.0) mStage++;
+                                break;
+                            case 7:
+                                Console.logMsg("Cut");
+                                Runway.disable();
+                                mStage++;
+                                break;
+                            case 8:
+                                Console.logMsg("Backing up");
+                                Chassis.resetDistance();
+                                if(DriverStation.getAlliance().get() == Alliance.Red){ 
+                                    Chassis.setDrivePower(-.25, -.30);
+                                }else{
+                                    Chassis.setDrivePower(-.30, -.25);
+                                }
+                                tmrStageTimeOut.reset();
+                                mStage++;
+                                break;
+                            case 9:
+                                if((Chassis.getDriveDistance() <= -144.00) || tmrStageTimeOut.get() > 2.5) mStage++;
+                                break;
+                            case 10:
+                            //TODO: Fix turn
+                                Console.logMsg("and Turning");
+                                Chassis.resetAngle();
+                                Chassis.disableDistancePID();
+                                Chassis.goToAngle(180);
+                                tmrStageTimeOut.reset();
+                                mStage++;
+                                break;
+                            case 11:
+                                if(Chassis.isAtAngle() || tmrStageTimeOut.get() > 2.5) mStage++;
+                                break;
+                            case 12:
+                            //TODO: Fix to require picking up note and running back intake
+                                Console.logMsg("Backing up");
+                                Chassis.resetDistance();
+                                Chassis.setDrivePower(-0.30, -0.30);
+                                tmrStageTimeOut.reset();
+                                mStage++;
+                                break;
+                            case 13:
+                            //TODO: Fix to require picking up note
+                                if((Chassis.getDriveDistance() <= -48.0)|| tmrStageTimeOut.get() > 2.5) mStage++;
+                                break;
+                            case 14:
+                            //TODO: Fix turn
+                                Console.logMsg("Turning to face speaker");
+                                Chassis.resetAngle();
+                                Chassis.disableDistancePID();
+                                Chassis.goToAngle(180);
+                                tmrStageTimeOut.reset();
+                                mStage++;
+                                break;
+                            case 15:
+                                if(Chassis.isAtAngle() || tmrStageTimeOut.get() > 2.5) mStage++;
+                                break;
+                            case 16:
+                            //TODO: Fix distance
+                                Console.logMsg("Driving towards speaker");
+                                Chassis.resetDistance();
+                                Chassis.setDrivePower(-0.30, -0.30);
+                                tmrStageTimeOut.reset();
+                                mStage++;
+                                break;
+                            case 17:
+                                if((Chassis.getDriveDistance() <= -48.0)|| tmrStageTimeOut.get() > 2.5) mStage++;
+                                break;
+                            case 18:
+                                Console.logMsg("Charging Reels");
+                                Runway.speakerShot();
+                                tmrStageTimeOut.reset();
+                                mStage++;
+                                break;
+                            case 19:
+                                if (tmrStageTimeOut.get() > 0.25) mStage++;
+                                break;
+                            case 20:
+                                Console.logMsg("Shooting");
+                                Runway.enableDirector();
+                                tmrStageTimeOut.reset();
+                                mStage++;
+                                break;
+                            case 21:
+                                if (tmrStageTimeOut.get() > 1.0) mStage++;
+                                break;
+                            case 22:
+                                Console.logMsg("Cut");
+                                Runway.disable();
+                                mStage++;
+                                break;
+                            case 23:
+                                Console.logMsg("and POSE");
+                                Robot.disableSubsystems();
+                                mStage++;
+                                break;
+                            default:
+                                Robot.disableSubsystems();
+                        } break;
+                    case SPEAKER_AMP_SIDE:
+                        switch(mStage){ 
+                            case 0:
+                                tmrStageTimeOut.reset();
+                                mStage++;
+                                break;
+                            case 1:
+                                if(tmrStageTimeOut.get() > mSelectedStartDelay.time){
+                                    mStage++;
+                                }    
+                                break;
+                            case 2:
+                                Console.logMsg("Starting Sequence\"" + Sequence.SHOOTTRAVEL.toString() + "\"-" + mSelectedStartingPosition.toString());
+                                mStage++;
+                                break;
+                            case 3:
+                                Console.logMsg("Charging Reels");
+                                Runway.speakerShot();
+                                tmrStageTimeOut.reset();
+                                mStage++;
+                                break;
+                            case 4:
+                                if (tmrStageTimeOut.get() > .25) mStage++;
+                                break;
+                            case 5:
+                                Console.logMsg("Shooting");
+                                Runway.enableDirector();
+                                tmrStageTimeOut.reset();
+                                mStage++;
+                                break;
+                            case 6:
+                                if (tmrStageTimeOut.get() > 1.0) mStage++;
+                                break;
+                            case 7:
+                                Console.logMsg("Cut");
+                                Runway.disable();
+                                mStage++;
+                                break;
+                            case 8:
+                                Console.logMsg("Backing up");
+                                Chassis.resetDistance();
+                                Chassis.setDrivePower(-0.30, -0.30);
+                                Chassis.goToDistance(-24.0);
+                                tmrStageTimeOut.reset();
+                                mStage++;
+                                break;
+                            case 9:
+                                if((Chassis.getDriveDistance() <= -24.0) || tmrStageTimeOut.get() > 2.5) mStage++;
+                                break;
+                            case 10:
+                            //TODO: Fix turn
+                                Console.logMsg("and Turning");
+                                Chassis.resetAngle();
+                                Chassis.disableDistancePID();
+                                Chassis.goToAngle(180);
+                                tmrStageTimeOut.reset();
+                                mStage++;
+                                break;
+                            case 11:
+                                if(Chassis.isAtAngle() || tmrStageTimeOut.get() > 2.5) mStage++;
+                                break;
+                            case 12:
+                            //TODO: Fix to require picking up note and running back intake
+                                Console.logMsg("Backing up");
+                                Chassis.resetDistance();
+                                Chassis.setDrivePower(-0.30, -0.30);
+                                tmrStageTimeOut.reset();
+                                mStage++;
+                                break;
+                            case 13:
+                            //TODO: Fix to require picking up note
+                                if((Chassis.getDriveDistance() <= -48.0)|| tmrStageTimeOut.get() > 2.5) mStage++;
+                                break;
+                            case 14:
+                            //TODO: Fix turn
+                                Console.logMsg("Turning to face speaker");
+                                Chassis.resetAngle();
+                                Chassis.disableDistancePID();
+                                Chassis.goToAngle(180);
+                                tmrStageTimeOut.reset();
+                                mStage++;
+                                break;
+                            case 15:
+                                if(Chassis.isAtAngle() || tmrStageTimeOut.get() > 2.5) mStage++;
+                                break;
+                            case 16:
+                            //TODO: Fix distance
+                                Console.logMsg("Driving towards speaker");
+                                Chassis.resetDistance();
+                                Chassis.setDrivePower(-0.30, -0.30);
+                                tmrStageTimeOut.reset();
+                                mStage++;
+                                break;
+                            case 17:
+                                if((Chassis.getDriveDistance() <= -48.0)|| tmrStageTimeOut.get() > 2.5) mStage++;
+                                break;
+                            case 18:
+                                Console.logMsg("Charging Reels");
+                                Runway.speakerShot();
+                                tmrStageTimeOut.reset();
+                                mStage++;
+                                break;
+                            case 19:
+                                if (tmrStageTimeOut.get() > 0.25) mStage++;
+                                break;
+                            case 20:
+                                Console.logMsg("Shooting");
+                                Runway.enableDirector();
+                                tmrStageTimeOut.reset();
+                                mStage++;
+                                break;
+                            case 21:
+                                if (tmrStageTimeOut.get() > 1.0) mStage++;
+                                break;
+                            case 22:
+                                Console.logMsg("Cut");
+                                Runway.disable();
+                                mStage++;
+                                break;
+                            case 23:
+                                Console.logMsg("and POSE");
+                                Robot.disableSubsystems();
+                                mStage++;
+                                break;
+                            default:
+                                Robot.disableSubsystems();
                         } break;
                     default:
                         switch(mStage){
@@ -416,40 +789,104 @@ public class Autonomous {
                             default:
                                 Robot.disableSubsystems();
                         }
-                }
-            }
-        },
-        JUSTCROSS("Just Cross Field"){//TODO: Make
-            @Override public void run(){
-                switch(mStage){
-                case 0:
-                    tmrStageTimeOut.reset();
-                    mStage++;
-                    break;
-                case 1:
-                    if(tmrStageTimeOut.get() > mSelectedStartDelay.time){
-                        mStage++;
-                    }    
-                    break;
-                case 2:
-                    Console.logMsg("Drive");
-                    Chassis.setDrivePower(0.30, 0.30);
-                    Chassis.resetDistance();
-                    tmrStageTimeOut.reset();
-                    mStage++;
-                    break;
-                case 3:
-                    if((Chassis.getDriveDistance() >= 180.0) || tmrStageTimeOut.get() > 5.0){
-                        mStage++;
                     }
-                    break;
-                case 4:
-                    Console.logMsg("Stop");
-                    Robot.disableSubsystems();
-                    mStage++;
-                    break;
-                default: 
-                    Robot.disableSubsystems();
+                }
+            },
+        SHOOT_AND_SHOOT_AGAIN("Shoot and Shoot Again") {
+            @Override public void run() {
+                switch(mSelectedStartingPosition) {
+                    case SPEAKER_AMP_SIDE:
+                        switch(mStage) {
+                            case 0:
+                                Console.logMsg("Starting Sequence\"" + Sequence.SHOOT_AND_SHOOT_AGAIN.toString() + "\"-" + mSelectedStartingPosition.toString());
+                                mStage++; break;
+                            default:
+                                Robot.disableSubsystems();
+                        } break;
+                    case SPEAKER_CENTER:
+                        switch(mStage) {
+                            case 0:
+                                Console.logMsg("Starting Sequence\"" + Sequence.SHOOT_AND_SHOOT_AGAIN.toString() + "\"-" + mSelectedStartingPosition.toString());
+                                mStage++; break;
+                            case 1:
+                                if(tmrStageTimeOut.get() > mSelectedStartDelay.time) mStage++;
+                                break;
+                            case 2:
+                                Console.logMsg("Spinning Reels...");
+                                Runway.speakerShot();
+                                Backstage.goToPosition(Backstage.Position.FLOOR);
+                                tmrStageTimeOut.reset();
+                                mStage++;
+                                break;
+                            case 3:
+                                if(tmrStageTimeOut.get() > 0.25) mStage++;
+                                break;
+                            case 4:
+                                Console.logMsg("Shooting...");
+                                Runway.enableDirector();
+                                tmrStageTimeOut.reset();
+                                mStage++;
+                            case 5:
+                                if(tmrStageTimeOut.get() > 1.0) mStage++;
+                                break;
+                            case 6:
+                                Console.logMsg("Backing up...");
+                                Chassis.setDrivePower(-0.125, -0.125);
+                                Chassis.resetDistance();
+                                Runway.disableReels();
+                                Backstage.enableIntake();
+                                Backstage.enableAssistantDirector();
+                                tmrStageTimeOut.reset();
+                                mStage++;
+                                break;
+                            case 7:
+                                if(tmrStageTimeOut.get() > 4.0 || Chassis.getDriveDistance() <= -48.0 || Backstage.isLoaded()) mStage++;
+                                break;
+                            case 8:
+                                Console.logMsg("Driving forward...");
+                                Chassis.setDrivePower(0.125, 0.125);
+                                Chassis.resetDistance();
+                                Runway.speakerShot();
+                                Runway.disableDirector();
+                                Backstage.disableIntake();
+                                Backstage.disableAssistantDirector();
+                                tmrStageTimeOut.reset();
+                                mStage++;
+                                break;
+                            case 9:
+                                if(tmrStageTimeOut.get() > 4.0 || Chassis.getDriveDistance() >= 48.0) mStage++;
+                                break;
+                            case 10:
+                                Console.logMsg("Shooting...");
+                                Chassis.disable();
+                                Runway.enableDirector();
+                                tmrStageTimeOut.reset();
+                                mStage++;
+                                break;
+                            case 11:
+                                if(tmrStageTimeOut.get() > 1.0) mStage++;
+                                break;
+                            case 12:
+                                Console.logMsg("End of Sequence"); mStage++;
+                            default:
+                                Robot.disableSubsystems();
+                        } break;
+                    case SPEAKER_SOURCE_SIDE:
+                        switch(mStage) {
+                            case 0:
+                                Console.logMsg("Starting Sequence\"" + Sequence.SHOOT_AND_SHOOT_AGAIN.toString() + "\"-" + mSelectedStartingPosition.toString());
+                                mStage++; break;
+                            default:
+                                Robot.disableSubsystems();
+                        } break;
+                    default:
+                        switch(mStage) {
+                            case 0:
+                                Console.logMsg("Invalid starting position");
+                                mStage++; break;
+                            default:
+                                Robot.disableSubsystems();
+                        } break;
                 }
             }
         };
@@ -514,10 +951,9 @@ public class Autonomous {
     public static void initDashboard(){
         chsSequence.addOption(Sequence.NOTHING.label, Sequence.NOTHING);
         chsSequence.addOption(Sequence.SHOOTSTAY.label, Sequence.SHOOTSTAY);
-        chsSequence.addOption(Sequence.SHOOTTRAVEL.label, Sequence.SHOOTTRAVEL);
-        //chsSequence.addOption(Sequence.SHOOTCROSS.label, Sequence.SHOOTCROSS);
         chsSequence.addOption(Sequence.JUSTTRAVEL.label, Sequence.JUSTTRAVEL);
-        chsSequence.addOption(Sequence.JUSTCROSS.label, Sequence.JUSTCROSS);
+        chsSequence.addOption(Sequence.SHOOTTRAVEL.label, Sequence.SHOOTTRAVEL);
+        chsSequence.addOption(Sequence.SHOOT_AND_SHOOT_AGAIN.label, Sequence.SHOOT_AND_SHOOT_AGAIN);
         chsSequence.setDefaultOption(Sequence.NOTHING.label, Sequence.NOTHING);
         SmartDashboard.putData("Sequence", chsSequence);
 
@@ -543,5 +979,7 @@ public class Autonomous {
 
         Chassis.periodic();
         Runway.periodic();
+        Hanger.periodic();
+        Backstage.periodic();
     }
 }

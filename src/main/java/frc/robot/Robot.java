@@ -14,6 +14,7 @@ import frc.robot.periods.Autonomous;
 import frc.robot.periods.Disabled;
 import frc.robot.periods.Teleoperated;
 import frc.robot.periods.Test;
+import frc.robot.subsystem.Backstage;
 import frc.robot.subsystem.Chassis;
 import frc.robot.subsystem.Hanger;
 import frc.robot.subsystem.Runway;
@@ -37,6 +38,8 @@ public class Robot extends TimedRobot {
         Chassis.disable();
         Runway.disable();
         Hanger.disable();
+        Backstage.disableIntake();
+        Backstage.disableAssistantDirector();
     }
     /**
      * This function is run when the robot is first started up and should be used for any
@@ -59,6 +62,7 @@ public class Robot extends TimedRobot {
         Chassis.init();
         Runway.init();
         Hanger.init();
+        Backstage.init();
 
         //Wait for NetworkTable connection
         while(!NetworkTableInstance.getDefault().isConnected());
@@ -69,6 +73,7 @@ public class Robot extends TimedRobot {
         Chassis.initDashboard();
         Runway.initDashboard();
         Hanger.initDashboard();
+        Backstage.initDashboard();
     }
 
     @Override
@@ -78,6 +83,7 @@ public class Robot extends TimedRobot {
         Chassis.updateDashboard();
         Runway.updateDashboard();
         Hanger.updateDashboard();
+        Backstage.updateDashboard();
     }
 
     @Override

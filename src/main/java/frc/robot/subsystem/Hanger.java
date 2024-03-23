@@ -3,6 +3,7 @@ package frc.robot.subsystem;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.networktables.NetworkTable;
 import frc.molib.dashboard.Entry;
 import frc.molib.sensors.DigitalInput;
@@ -34,6 +35,9 @@ public class Hanger {
     private static boolean mOverrideSafety = false;
     private static boolean mHasExtended = false;
 
+    private static double winchHalfway = 120.0;
+
+
     /**
      * prevents other instances of the class being made
      */
@@ -45,7 +49,7 @@ public class Hanger {
     public static void init(){
         mtrWinch.setInverted(true);
         mtrWinch.setNeutralMode(NeutralModeValue.Brake);
-        resetPosition();
+        //resetPosition();
     }
 
     /**
@@ -59,15 +63,7 @@ public class Hanger {
         entWinchPosition.set(getPosition());
         entLeftRetracted.set(limHangerRetracted_L.get());
         entRightRetracted.set(limHangerRetracted_R.get());
-
-        //temp stuff
-        if(!isRetracted()){
-            mHasExtended = true;
-        }
-
         entRetracted.set(isRetracted());
-        entHasExtended.set(mHasExtended);
-        entSafetyStopped.set(isRetracted() && mHasExtended);
     }
 
     /**
@@ -99,12 +95,20 @@ public class Hanger {
         setWinchPower(0.50);
     }
 
+    public static void retract(){
+        setWinchPower(-0.50);
+    }
+
     public static double getPosition(){
         return mtrWinch.getPosition().getValue();
     }
 
-    public static void resetPosition(){
+    public static void setPositionZero(){
         mtrWinch.setPosition(0.0);
+    }
+
+    public static void setPositionHalfway(){
+        mtrWinch.setPosition(winchHalfway);
     }
 
     public static void resetFlag(){
@@ -121,12 +125,22 @@ public class Hanger {
             }
         }*/
 
-        if(!isRetracted()){
+        /*if(!isRetracted()){
             mHasExtended = true;
         }
 
         if(isRetracted() && mHasExtended){
             setWinchPower(0.0);
+        }*/
+
+
+        if(isRetracted()){
+            if(getPosition() <= winchHalfway){
+                setPositionZero();
+                mWinchPower = MathUtil.clamp(mWinchPower, 0.0, 1.0);
+            } else {
+                mWinchPower = MathUtil.clamp(mWinchPower, -1.0, 0.0);
+            }
         }
 
         mtrWinch.set(mWinchPower);

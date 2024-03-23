@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.molib.buttons.Button;
 import frc.molib.buttons.ButtonManager;
 import frc.molib.hid.XboxController;
+import frc.robot.subsystem.Backstage;
 import frc.robot.subsystem.Chassis;
 import frc.robot.subsystem.Hanger;
 import frc.robot.subsystem.Runway;
@@ -23,9 +24,9 @@ public class Teleoperated {
      */
     public static enum SpeedPercentage{
         TORTOISE("Tortoise - 10%", 0.05, 0.10, 0.20),
-        SLOW("Slow - 40%", 0.15, 0.40, 0.60),
-        NORMAL("Normal - 75%", 0.15, 0.75, 0.90),
-        FAST("Fast - 85%", 0.15, 0.85, 1.00);
+        SLOW("Slow - 40%", 0.20, 0.40, 0.60),
+        NORMAL("Normal - 75%", 0.20, 0.75, 0.90),
+        FAST("Fast - 85%", 0.20, 0.85, 1.00);
 
         public final String label;
         public final double slow;    
@@ -79,20 +80,20 @@ public class Teleoperated {
 
     //Shots
     private static final Button btnSpeakerShot = new Button(){
-        @Override public boolean get() { return ctlOperator.getRightTrigger(); }
+        @Override public boolean get() { return ctlOperator.getRightTrigger();}
     };
 
     private static final Button btnAmpShot = new Button(){
-        @Override public boolean get() {return ctlOperator.getRightBumper(); }
+        @Override public boolean get() {return ctlOperator.getRightBumper();}
     };
 
     private static final Button btnFieldShot = new Button(){
-        @Override public boolean get() {return ctlOperator.getBButton(); }
+        @Override public boolean get() {return ctlOperator.getBButton();}
     };
     
     //Speed variability
     private static final Button btnBoost = new Button(){
-        @Override public boolean get() {return ctlDriver.getRightTrigger() || ctlDriver.getLeftTrigger();}
+        @Override public boolean get() {return ctlDriver.getRightTrigger();}
     };
 
     private static final Button btnSlow = new Button(){
@@ -105,38 +106,42 @@ public class Teleoperated {
     };
 
     //Intake
-    private static final Button btnIntake = new Button(){
-        @Override public boolean get() { return ctlOperator.getLeftTrigger(); }
+    private static final Button btnSourceIntake = new Button(){
+        @Override public boolean get() { return ctlOperator.getLeftTrigger();}
+    };
+
+    private static final Button btnFloorIntake = new Button(){
+        @Override public boolean get() { return ctlOperator.getLeftBumper() && false;}
     };
 
     //Floor-intake specific
     private static final Button btnReverseFloorIntake = new Button(){
-        @Override public boolean get() { return ctlOperator.getXButton(); }
+        @Override public boolean get() { return ctlOperator.getXButton() && false;}
     };
 
     private static final Button btnRaiseFloorIntake = new Button(){
-        @Override public boolean get() { return ctlOperator.getYButton(); }
+        @Override public boolean get() { return ctlOperator.getYButton();}
     };
     
     private static final Button btnLowerFloorIntake = new Button(){
-        @Override public boolean get() { return ctlOperator.getAButton(); }
+        @Override public boolean get() { return ctlOperator.getAButton();}
     };    
 
     //Hanger
-    private static final Button btnHanger_Reset = new Button() {
-        @Override public boolean get() { return ctlDriver.getStartButton() && ctlDriver.getBackButton(); };
+    private static final Button btnHanger_Set_Halfway = new Button() {
+        @Override public boolean get() { return ctlOperator.getStartButton() && ctlOperator.getBackButton();};
     };
 
     private static final Button btnHanger_Override = new Button() {
-        @Override public boolean get() { return ctlOperator.getStartButton(); }
+        @Override public boolean get() { return ctlOperator.getStartButton();}
     };
 
     private static final Button btnEnableHanger = new Button(){
-        @Override public boolean get() { return ctlDriver.getPOV() == 0; }
+        @Override public boolean get() { return ctlDriver.getPOV() == 0 || ctlDriver.getLeftTrigger();}
     };
 
     private static final Button btnRetractHanger = new Button(){
-        @Override public boolean get() { return ctlDriver.getPOV() == 180; }
+        @Override public boolean get() { return ctlDriver.getPOV() == 180;}
     };
 
 
@@ -199,13 +204,13 @@ public class Teleoperated {
     }
 
     /**
+     * 
      * math for arcade drive
      * @param throttle [-1.0 to 1.0] forward backward
      * @param steering [-1.0 to 1.0] left right
      */
-    //TODO: check if button slow is necessary
     private static void setArcadeDrive(double throttle, double steering){
-        if(Math.abs(throttle) > Math.abs(steering) && !btnSlow.get()){
+        if(Math.abs(throttle) > Math.abs(steering)){
             steering = MathUtil.clamp(( steering / (Math.abs(throttle) * 3.00 )), -1.0, 1.0);
         }
         setTankDrive(throttle + steering, throttle - steering);
@@ -217,7 +222,8 @@ public class Teleoperated {
      */
     public static void periodic(){
 
-        if(DriverStation.getMatchTime() > 15.0 && DriverStation.getMatchTime() < 20.0) ctlDriver.setRumble(1.0);
+        if((DriverStation.getMatchTime() > 15.0 && DriverStation.getMatchTime() < 20.0) || (btnSourceIntake.get() && Runway.isLoaded())) ctlDriver.setRumble(1.0);
+        else ctlDriver.setRumble(0.0);
 
         //Create speedPercentage
         double speedPercentage;
@@ -269,12 +275,35 @@ public class Teleoperated {
             } else {
                 Runway.disableDirector();
             }
-        } else if (btnIntake.get()) {
+        } else if (btnSourceIntake.get()) {
             Runway.reverseReels();
             Runway.reverseDirector();
-            Runway.enableLED();
+            if(Runway.isLoaded()) {
+                Runway.disableLED();
+            } else {
+                Runway.enableLED();
+            }
+        } else if(btnFloorIntake.get()) {
+            
+            if(!Backstage.isLoaded()){
+                Runway.enableDirector();
+            } else {
+                Runway.disableDirector();
+            }
+
+            Backstage.enableIntake();
+            Backstage.enableAssistantDirector();
+            
+        } else if(btnReverseFloorIntake.get()) {
+            
+            Runway.reverseDirector();
+            Backstage.reverseIntake();
+            Backstage.reverseAssistantDirector();
+            
         } else {
             Runway.disable();
+            Backstage.disableIntake();
+            Backstage.disableAssistantDirector();
             tmrSpinUp.reset();
         }
 /*
@@ -284,14 +313,17 @@ public class Teleoperated {
         } else {
             Hanger.disableOverride();
         }
-
-        if(btnHanger_Reset.getPressed()) {
-            Hanger.resetPosition();
-        }
 */
+
+        if(btnHanger_Set_Halfway.getPressed()) {
+            Hanger.setPositionHalfway();
+        }
+
         if(btnEnableHanger.get()){
             Hanger.enable();
-        }else{
+        } else if (btnRetractHanger.get()){
+            Hanger.retract();
+        } else {
             Hanger.disable();
         }
 

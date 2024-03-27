@@ -6,6 +6,7 @@ import frc.molib.buttons.ButtonManager;
 import frc.molib.dashboard.Entry;
 import frc.molib.hid.XboxController;
 import frc.robot.Robot;
+import frc.robot.subsystem.Backstage;
 import frc.robot.subsystem.Chassis;
 import frc.robot.subsystem.Hanger;
 import frc.robot.subsystem.Runway;
@@ -90,6 +91,14 @@ public class Test {
         @Override public boolean get() { return ctlDriver.getPOV() == 180; }
     };
 
+    private static Button btnRaiseBackstage = new Button() {
+        @Override public boolean get() { return ctlOperator.getPOV() == 0; }
+    };
+
+    private static Button btnLowerBackstage = new Button() {
+        @Override public boolean get() { return ctlOperator.getPOV() == 180; }
+    };
+
     /**
      * Constructor
      */
@@ -102,7 +111,6 @@ public class Test {
         ButtonManager.clearFlags();
         
         Chassis.disablePIDs();
-        //Hanger.enableOverride();
         Robot.disableSubsystems();
     }
 
@@ -120,6 +128,7 @@ public class Test {
      */
     public static void periodic() {
 
+    //Runway Controls
         if(btnReels.get()){
             Runway.setReelPower(entTopReelPower.get(), entBottomReelPower.get());
             if(btnEnableDirector.get()) Runway.enableDirector();
@@ -134,67 +143,27 @@ public class Test {
         }else{
             Runway.disable();
         }
-/*
-        if(btnEnableLights.get()){
-            Runway.enableLED();
-        }else{
-            Runway.disableLED();
-        }
-*/
-/*
-        if(btnResetDistance.get()){
-            Chassis.resetDistance();
-            Chassis.resetAngle();
-        }
 
-        if(btnDriveOneFeet.getPressed()){
-            Chassis.resetDistance();
-            Chassis.goToDistance(-12.00);
-        }
-
-        if(btnDriveTwoFeet.getPressed()){
-            Chassis.resetDistance();
-            Chassis.goToDistance(-24.00);
-        }
-
-        if(btnDriveFourFeet.getPressed()){
-            Chassis.resetDistance();
-            Chassis.goToDistance(-48.00);
-        }
-
-        if(btnDriveEightFeet.getPressed()){
-            Chassis.resetDistance();
-            Chassis.goToDistance(-96.00);
-        }
-
-        if(btnDisablePIDs.get()){
-            Chassis.disablePIDs();
-        }
-
-        if (btnTurn90.getPressed()){
-            Chassis.resetAngle();
-            Chassis.goToAngle(90.0);
-        }
-        */
-
-        if(btnHanger_ResetFlag.getPressed()){
-            Hanger.resetFlag();
-        }
-
+    //Hanger Controls
         if(btnHanger_Enable.get())
             Hanger.setWinchPower(0.20);
         else if(btnHanger_Reverse.get())
             Hanger.setWinchPower(-0.20);
         else
             Hanger.disable();
-        
 
-       // Runway.setDirectorPower(ctlTest.getTriggerAxis());
+    //Backstage Controls
+        if(btnRaiseBackstage.get()) 
+            Backstage.setPivotPower(-0.10);
+        else if(btnLowerBackstage.get())
+            Backstage.setPivotPower(0.10);
+        else Backstage.disablePivot();
 
         //Update Subsystems
         Chassis.periodic();
         Runway.periodic();
         Hanger.periodic();
+        Backstage.periodic();
     }
     
 }

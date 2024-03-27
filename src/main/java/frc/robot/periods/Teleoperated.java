@@ -75,6 +75,9 @@ public class Teleoperated {
     //Make timer
     private static Timer tmrSpinUp = new Timer();
 
+    //Variables
+    private static boolean mHasBackstageLoaded = false;
+
 
     //BUTTONS//
 
@@ -111,12 +114,12 @@ public class Teleoperated {
     };
 
     private static final Button btnFloorIntake = new Button(){
-        @Override public boolean get() { return ctlOperator.getLeftBumper() && false;}
+        @Override public boolean get() { return ctlOperator.getLeftBumper();}
     };
 
     //Floor-intake specific
     private static final Button btnReverseFloorIntake = new Button(){
-        @Override public boolean get() { return ctlOperator.getXButton() && false;}
+        @Override public boolean get() { return ctlOperator.getXButton();}
     };
 
     private static final Button btnRaiseFloorIntake = new Button(){
@@ -125,7 +128,19 @@ public class Teleoperated {
     
     private static final Button btnLowerFloorIntake = new Button(){
         @Override public boolean get() { return ctlOperator.getAButton();}
-    };    
+    };   
+
+    private static final Button btnRaiseFloorIntake_Manual = new Button() {
+        @Override public boolean get() { return ctlOperator.getPOV() == 0; }
+    }; 
+
+    private static final Button btnLowerFloorIntake_Manual = new Button() {
+        @Override public boolean get() { return ctlOperator.getPOV() == 180; }
+    };
+
+    private static final Button btnFixFloorIntake = new Button() {
+        @Override public boolean get() { return ctlOperator.getPOV() == 90; }
+    };
 
     //Hanger
     private static final Button btnHanger_Set_Halfway = new Button() {
@@ -179,7 +194,7 @@ public class Teleoperated {
         chsSpeedPercentage.addOption(SpeedPercentage.NORMAL.label, SpeedPercentage.NORMAL);
         chsSpeedPercentage.addOption(SpeedPercentage.FAST.label, SpeedPercentage.FAST);
 
-        chsSpeedPercentage.setDefaultOption(SpeedPercentage.NORMAL.label, SpeedPercentage.NORMAL);
+        chsSpeedPercentage.setDefaultOption(SpeedPercentage.FAST.label, SpeedPercentage.FAST);
 
         SmartDashboard.putData("Speed Percentage", chsSpeedPercentage);
 
@@ -222,8 +237,13 @@ public class Teleoperated {
      */
     public static void periodic(){
 
-        if((DriverStation.getMatchTime() > 15.0 && DriverStation.getMatchTime() < 20.0) || (btnSourceIntake.get() && Runway.isLoaded())) ctlDriver.setRumble(1.0);
-        else ctlDriver.setRumble(0.0);
+        if((DriverStation.getMatchTime() > 15.0 && DriverStation.getMatchTime() < 20.0) || (btnSourceIntake.get() && Runway.isLoaded()) || ((btnFloorIntake.get() || btnFixFloorIntake.get()) && Runway.isLoaded())) {
+            ctlDriver.setRumble(1.0);
+            ctlOperator.setRumble(1.0);
+        } else {
+            ctlDriver.setRumble(0.0);
+            ctlOperator.setRumble(0.0);
+        }
 
         //Create speedPercentage
         double speedPercentage;
@@ -283,16 +303,36 @@ public class Teleoperated {
             } else {
                 Runway.enableLED();
             }
-        } else if(btnFloorIntake.get()) {
+        } else if(btnFloorIntake.get() || btnFixFloorIntake.get()) {
             
+            /*
             if(!Backstage.isLoaded()){
-                Runway.enableDirector();
+                Runway.setDirectorPower(0.75);
             } else {
                 Runway.disableDirector();
             }
 
             Backstage.enableIntake();
             Backstage.enableAssistantDirector();
+            */
+
+            if(Backstage.isLoaded()) mHasBackstageLoaded = true;
+            if(mHasBackstageLoaded) {
+                Backstage.disableIntake();
+                Backstage.disableAssistantDirector();
+                if(Runway.isLoaded()) {
+                    Runway.disableDirector();
+                } else {
+                    Runway.reverseDirector();
+                }
+            } else {
+                Runway.setDirectorPower(0.75);
+                if(btnFloorIntake.get())
+                    Backstage.enableIntake();
+                else if(btnFixFloorIntake.get())
+                    Backstage.reverseIntake();
+                Backstage.enableAssistantDirector();
+            }
             
         } else if(btnReverseFloorIntake.get()) {
             
@@ -305,6 +345,22 @@ public class Teleoperated {
             Backstage.disableIntake();
             Backstage.disableAssistantDirector();
             tmrSpinUp.reset();
+            mHasBackstageLoaded = false;
+        }
+
+    //Backstage Pivot
+        if(btnRaiseFloorIntake.getPressed()) {
+            Backstage.goToPosition(Backstage.Position.RAISED);
+        } else if(btnLowerFloorIntake.getPressed()) {
+            Backstage.goToPosition(Backstage.Position.FLOOR);
+        } else if(btnRaiseFloorIntake_Manual.get()) {
+            Backstage.disablePivotPID();
+            Backstage.setPivotPower(-0.30);
+        } else if(btnLowerFloorIntake_Manual.get()) {
+            Backstage.disablePivotPID();
+            Backstage.setPivotPower(0.30);
+        } else {
+            Backstage.disablePivot();
         }
 /*
         //Hanger function
@@ -331,5 +387,6 @@ public class Teleoperated {
         Chassis.periodic();
         Runway.periodic();
         Hanger.periodic();
+        Backstage.periodic();
     }
 }

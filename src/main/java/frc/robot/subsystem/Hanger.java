@@ -31,6 +31,8 @@ public class Hanger {
     
 
     private static TalonFX mtrWinch= new TalonFX(8);
+
+    
     private static double mWinchPower = 0.0;
     private static boolean mOverrideSafety = false;
     private static boolean mHasExtended = false;

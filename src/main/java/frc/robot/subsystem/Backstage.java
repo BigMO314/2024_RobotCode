@@ -15,7 +15,7 @@ import frc.robot.Robot;
 
 public class Backstage {
     public static enum Position {
-        RAISED(0.0),
+        RAISED(10.0),
         FLOOR(112.0);
 
         public final double angle;

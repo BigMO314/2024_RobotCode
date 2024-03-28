@@ -1,6 +1,7 @@
 package frc.robot.periods;
 
 import frc.molib.hid.XboxController;
+import frc.robot.subsystem.Backstage;
 import frc.robot.subsystem.Chassis;
 import frc.robot.subsystem.Hanger;
 import frc.robot.subsystem.Runway;
@@ -21,6 +22,7 @@ public class Disabled {
         Chassis.disableBrake();
         new XboxController(0).setRumble(0.0);
         //Hanger.disableOverride();
+        Backstage.disablePIDs();
     }
 
     /**

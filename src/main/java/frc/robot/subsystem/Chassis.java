@@ -84,7 +84,7 @@ public class Chassis {//make the Chassis class
 
     }
 
-    /** TODO: Add comment */
+    /** Updates dashboard values */
     public static void updateDashboard() {
         entDrive_Distance_L1.set(mtrDrive_L1.getPosition().getValue() * mDriveGearRatio * (4.0 * Math.PI));
         entDrive_Distance_L2.set(mtrDrive_L2.getPosition().getValue() * mDriveGearRatio * (4.0 * Math.PI));

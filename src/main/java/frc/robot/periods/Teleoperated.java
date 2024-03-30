@@ -182,6 +182,8 @@ public class Teleoperated {
 
         //Timer
         tmrSpinUp.restart();
+
+        Hanger.disable();
     }
 
 

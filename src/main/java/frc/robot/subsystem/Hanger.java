@@ -94,7 +94,7 @@ public class Hanger {
      * raises the Hanger
      */
     public static void enable(){
-        setWinchPower(0.50);
+        setWinchPower(0.65);
     }
 
     public static void retract(){

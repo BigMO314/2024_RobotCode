@@ -118,7 +118,7 @@ public class Backstage {
     }
 
     public static void reverseIntake() {
-        setIntakePower(-0.5);
+        setIntakePower(-0.75);
     }
 
     public static void jamfixIntake(){
@@ -140,7 +140,7 @@ public class Backstage {
     }
 
     public static void reverseAssistantDirector() {
-        setAssistantDirectorPower(-0.5);
+        setAssistantDirectorPower(-.75);
     }
 
     public static void disableAssistantDirector() {

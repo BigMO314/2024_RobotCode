@@ -55,20 +55,32 @@ public class Autonomous {
      * Sequences of robot action options for autonomous
      */
     private enum Sequence{
+        ABSOLUTELYNOTHING("Do ABSOLUTELY Nothing"){
+            @Override public void run(){
+                switch(mStage){
+                    case 0:
+                        Console.logMsg("Doing...nothing.");
+                        mStage++;
+                    default:
+                        Robot.disableSubsystems();
+                    }
+                }
+            },
         NOTHING("Do Nothing"){
             @Override public void run(){
                 switch(mStage){
                     case 0:
-                        Console.logMsg("Doing...nothing. Well, rezeroing, but nothing other than that.");
+                        Console.logMsg("Doing...nothing. Well, rezeroing and rewinding, but nothing other than that.");
                         mStage++;
                     case 1:
                         Backstage.setPivotPower(-0.25);
+                        Hanger.retract();
                         mStage++;
                         break;
                     case 2:
                         if(Backstage.isRaised()){
                             Backstage.goToPosition(Backstage.Position.RAISED);
-                            if(tmrStageTimeOut.get() > mSelectedStartDelay.time) mStage++;
+                            if((tmrStageTimeOut.get() > mSelectedStartDelay.time) && Hanger.isRetracted()) mStage++;
                         }
                         break;
                     default:
@@ -81,6 +93,7 @@ public class Autonomous {
                 switch ((mStage)) {
                     case 0:
                         Backstage.setPivotPower(-0.25);
+                        Hanger.retract();
                         mStage++;
                         break;
                     case 1:
@@ -127,6 +140,7 @@ public class Autonomous {
             switch(mStage){
                 case 0:
                     Backstage.setPivotPower(-0.25);
+                    Hanger.retract();
                     mStage++;
                     break;
                 case 1:
@@ -170,6 +184,7 @@ public class Autonomous {
                         switch(mStage){
                             case 0:
                                 Backstage.setPivotPower(-0.25);
+                                Hanger.retract();
                                 mStage++;
                                 break;
                             case 1:
@@ -238,6 +253,7 @@ public class Autonomous {
                         switch(mStage){
                             case 0:
                                 Backstage.setPivotPower(-0.25);
+                                Hanger.retract();
                                 mStage++;
                                 break;
                             case 1:
@@ -314,6 +330,7 @@ public class Autonomous {
                         switch(mStage){ 
                             case 0:
                                 Backstage.setPivotPower(-0.25);
+                                Hanger.retract();
                                 mStage++;
                                 break;
                             case 1:
@@ -418,6 +435,7 @@ public class Autonomous {
                             case 0:
                                 Console.logMsg("Starting Sequence\"" + Sequence.SHOOT_AND_SHOOT_AGAIN.toString() + "\"-" + mSelectedStartingPosition.toString());
                                 Backstage.setPivotPower(-0.25);
+                                Hanger.retract();
                                 mStage++;
                                 break;
                             case 1:
@@ -491,7 +509,7 @@ public class Autonomous {
                                     Backstage.disableIntake();
                                     Backstage.disableAssistantDirector();
                                 }
-                                if(tmrStageTimeOut.get() > 4.0 || Chassis.getDriveDistance() >= 55.00) mStage++;
+                                if(tmrStageTimeOut.get() > 4.0 || Chassis.getDriveDistance() >= (DriverStation.getAlliance().get() == Alliance.Blue ? 53.0 : 55.00)) mStage++;
                                 break;
                             case 12:
                                 Console.logMsg("Turning...");
@@ -510,7 +528,7 @@ public class Autonomous {
                                     Backstage.disableIntake();
                                     Backstage.disableAssistantDirector();
                                 }
-                                if((Math.abs(Chassis.getDriveAngle()) >= turnAngle) || tmrStageTimeOut.get() > 1.0) mStage++;
+                                if((Math.abs(Chassis.getDriveAngle()) >= turnAngle + (DriverStation.getAlliance().get() == Alliance.Blue ? 10.0 : 0.0)) || tmrStageTimeOut.get() > 1.0) mStage++;
                                 break;
                             case 14:
                                 Console.logMsg("Waiting for Note...");
@@ -566,6 +584,7 @@ public class Autonomous {
                             case 0:
                                 Console.logMsg("Starting Sequence\"" + Sequence.SHOOT_AND_SHOOT_AGAIN.toString() + "\"-" + mSelectedStartingPosition.toString());
                                 Backstage.setPivotPower(-0.25);
+                                Hanger.retract();
                                 mStage++;
                                 break;
                             case 1:
@@ -746,6 +765,7 @@ public class Autonomous {
      * Sets up the dashboard options
      */
     public static void initDashboard(){
+        chsSequence.addOption(Sequence.ABSOLUTELYNOTHING.label, Sequence.ABSOLUTELYNOTHING);
         chsSequence.addOption(Sequence.NOTHING.label, Sequence.NOTHING);
         chsSequence.addOption(Sequence.SHOOTSTAY.label, Sequence.SHOOTSTAY);
         chsSequence.addOption(Sequence.JUSTTRAVEL.label, Sequence.JUSTTRAVEL);
